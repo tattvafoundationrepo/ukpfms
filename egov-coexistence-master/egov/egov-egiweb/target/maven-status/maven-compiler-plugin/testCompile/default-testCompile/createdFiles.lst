@@ -1,0 +1,5 @@
+org/egov/egi/web/controller/admin/masters/CreateRoleControllerTest.class
+org/egov/egi/web/controller/admin/masters/UpdateRoleControllerTest.class
+org/egov/egi/web/controller/AbstractContextControllerTest.class
+org/egov/egi/web/controller/admin/masters/ViewBoundaryTypeControllerTest.class
+org/egov/egi/web/controller/admin/masters/ViewRoleControllerTest.class

@@ -1,0 +1,17 @@
+org.egov.infra.web.contract.response
+org.egov.infra.web.controller
+org.egov.infra.web.controller.admin.auditing.report
+org.egov.infra.web.controller.admin.masters
+org.egov.infra.web.controller.admin.masters.boundary
+org.egov.infra.web.controller.admin.masters.boundarytype
+org.egov.infra.web.controller.admin.masters.city
+org.egov.infra.web.controller.admin.masters.config
+org.egov.infra.web.controller.admin.masters.crosshierarchy
+org.egov.infra.web.controller.admin.masters.department
+org.egov.infra.web.controller.admin.masters.feature
+org.egov.infra.web.controller.admin.masters.hierarchytype
+org.egov.infra.web.controller.admin.masters.role
+org.egov.infra.web.controller.admin.masters.user
+org.egov.infra.web.controller.admin.masters.userrole
+org.egov.infra.web.controller.common
+org.egov.infra.web.controller.es
