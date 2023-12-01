@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/application_6.xsd" version="6">
+  <description>eGov opensource ERP solution for municipal e-governance</description>
+  <display-name>egov-ear</display-name>
+  <module>
+    <web>
+      <web-uri>egov-egiweb-3.0.2-COE-SNAPSHOT.war</web-uri>
+      <context-root>/services/egi</context-root>
+    </web>
+  </module>
+  <module>
+    <web>
+      <web-uri>egov-commonsweb-3.0.2-COE-SNAPSHOT.war</web-uri>
+      <context-root>/services/common</context-root>
+    </web>
+  </module>
+  <module>
+    <web>
+      <web-uri>egov-eisweb-3.0.2-COE-SNAPSHOT.war</web-uri>
+      <context-root>/services/eis</context-root>
+    </web>
+  </module>
+  <module>
+    <web>
+      <web-uri>egov-egfweb-3.0.2-COE-SNAPSHOT.war</web-uri>
+      <context-root>/services/EGF</context-root>
+    </web>
+  </module>
+  <module>
+    <web>
+      <web-uri>egov-collectionweb-3.0.2-COE-SNAPSHOT.war</web-uri>
+      <context-root>/services/collection</context-root>
+    </web>
+  </module>
+  <library-directory>lib</library-directory>
+</application>

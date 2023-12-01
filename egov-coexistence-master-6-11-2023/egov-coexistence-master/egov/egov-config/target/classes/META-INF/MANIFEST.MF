@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Built-By: java-se
+Build-Jdk: 17.0.8.1
+Implementation-Title: e-governments config
+Implementation-Vendor-Id: org.egov
+Implementation-Vendor: eGovernments Foundation
+Created-By: Maven Integration for Eclipse
+Implementation-Version: 2023-12-01 05:54
+Specification-Title: e-governments config
+Specification-Version: 3.0.2-COE-SNAPSHOT
+
