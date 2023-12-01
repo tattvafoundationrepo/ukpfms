@@ -1,0 +1,8 @@
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-commonsweb/src/main/java/org/egov/commons/web/controller/NationalityController.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-commonsweb/src/main/java/org/egov/commons/web/controller/EducationalQualificationController.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-commonsweb/src/main/java/org/egov/commons/web/adaptor/EducationalQualificationJsonAdaptor.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-commonsweb/src/main/java/org/egov/commons/web/adaptor/UOMJsonAdaptor.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-commonsweb/src/main/java/org/egov/commons/web/controller/UOMCategoryController.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-commonsweb/src/main/java/org/egov/commons/web/controller/UOMController.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-commonsweb/src/main/java/org/egov/commons/web/adaptor/UOMCategoryJsonAdaptor.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-commonsweb/src/main/java/org/egov/commons/web/adaptor/NationalityJsonAdaptor.java

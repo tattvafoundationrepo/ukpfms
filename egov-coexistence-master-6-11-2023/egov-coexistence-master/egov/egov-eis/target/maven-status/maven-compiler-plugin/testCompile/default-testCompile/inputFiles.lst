@@ -1,0 +1,13 @@
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/service/PositionMasterServiceTest.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/service/EmployeeServiceTest.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/entity/PositionBuilder.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/service/EisCommonServiceTest.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/service/DeptDesigServiceTest.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/entity/DesignationBuilder.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/entity/DeptDesigBuilder.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/EISAbstractSpringIntegrationTest.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/service/PersonalInformationServiceTest.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/service/AssignmentServiceTest.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/service/DesignationServiceTest.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/service/EmployeeViewServiceTest.java
+/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-eis/src/test/java/org/egov/eis/entity/EmployeeBuilder.java
