@@ -1,8 +1,0 @@
-/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-egi/src/test/java/org/egov/builder/entities/BoundaryBuilder.java
-/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-egi/src/test/java/org/egov/infra/filestore/service/impl/LocalDiskFileStoreServiceTest.java
-/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-egi/src/test/java/org/egov/builder/entities/ModuleBuilder.java
-/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-egi/src/test/java/org/egov/builder/entities/DepartmentBuilder.java
-/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-egi/src/test/java/org/egov/builder/entities/HeirarchyTypeBuilder.java
-/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-egi/src/test/java/org/egov/infra/admin/master/service/HierarchyTypeServiceTest.java
-/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-egi/src/test/java/org/egov/infra/admin/master/service/DepartmentServiceTest.java
-/home/java-se/git/digit-ukpfms/egov-coexistence-master-6-11-2023/egov-coexistence-master/egov/egov-egi/src/test/java/org/egov/builder/entities/BoundaryTypeBuilder.java
