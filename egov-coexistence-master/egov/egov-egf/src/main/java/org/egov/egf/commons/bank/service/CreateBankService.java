@@ -62,11 +62,16 @@ import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 
 import org.egov.commons.Bank;
+import org.egov.commons.BankAudit;
 import org.egov.commons.contracts.BankSearchRequest;
 import org.egov.egf.commons.bank.repository.BankRepository;
+import org.egov.egf.utils.AuditReportUtils;
 import org.egov.infra.config.core.ApplicationThreadLocals;
+import org.egov.infstr.services.PersistenceService;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,6 +82,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class CreateBankService {
+
+	@Autowired
+	@Qualifier("persistenceService")
+	private PersistenceService persistenceService;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -155,6 +164,82 @@ public class CreateBankService {
 
 	public List<Bank> getAll() {
 		return bankRepository.findAll();
+	}
+
+	public List<String> getBankAuditReport(final String bankId) {
+
+		List<BankAudit> resultList = getBankAuditList(bankId);
+
+		List<String> modificationsList = new ArrayList<String>();
+
+		if (resultList.size() == 1)
+			return modificationsList;
+
+		for (int i = 0; i < resultList.size() - 1; i++) {
+
+			BankAudit previousModifiedRow = resultList.get(i);
+			BankAudit currentModifiedRow = resultList.get(i + 1);
+			String modifications = "";
+
+			if (!previousModifiedRow.getName().equals(currentModifiedRow.getName())) {
+				modifications = modifications + "<strong>" + "Name : " + "</strong>" + previousModifiedRow.getName() + " --> "
+						+ currentModifiedRow.getName() + "<br>";
+			}
+			if (!previousModifiedRow.getCode().equals(currentModifiedRow.getCode())) {
+				modifications = modifications + "Code : " + previousModifiedRow.getCode() + " --> "
+						+ currentModifiedRow.getCode() + "<br>";
+			}			
+			if (!previousModifiedRow.getNarration().equals(currentModifiedRow.getNarration())) {
+				modifications = modifications + "Narration : " + previousModifiedRow.getNarration()
+						+ " --> " + currentModifiedRow.getNarration() + "<br>";
+			}
+			if (!previousModifiedRow.getIsactive().equals(currentModifiedRow.getIsactive())) {
+				modifications = modifications + "Active : " + previousModifiedRow.getIsactive() + " --> "
+						+ currentModifiedRow.getIsactive();
+			}			
+
+			if (modifications.length() > 0) {
+								
+				modificationsList.add(
+						"User : " + currentModifiedRow.getNameOfmodifyingUser() + "<br>" + "Modified On : "
+								+ currentModifiedRow.getLastModifiedDate() + "<br><br>" + modifications);
+			}
+
+		}
+
+		return modificationsList;
+	}
+
+	private List<BankAudit> getBankAuditList(final String bankId) {
+
+		final StringBuilder queryStr = new StringBuilder();
+		queryStr.append(
+				"select bnk.id, bnk.code, bnk.name, bnk.narration, bnk.isactive, bnk.type, bnk.lastmodifieddate, bnk.lastmodifiedby, bnk.nameofmodifyinguser ")
+				.append(" from bank_aud bnk where bnk.id=:bankId order by bnk.lastmodifieddate NULLS FIRST");
+		SQLQuery queryResult = persistenceService.getSession().createSQLQuery(queryStr.toString());
+		queryResult.setLong("bankId", Long.valueOf(bankId));
+		final List<Object[]> bankAuditListFromQuery = queryResult.list();
+
+		List<BankAudit> bankAuditList = new ArrayList<BankAudit>();
+
+		for (Object[] obj : bankAuditListFromQuery) {
+			BankAudit element = new BankAudit();
+			element.setId(String.valueOf(obj[0] != null ? obj[0] : AuditReportUtils.NO_VALUE));
+			element.setCode(String.valueOf(obj[1] != null ? obj[1] : AuditReportUtils.NO_VALUE));
+			element.setName(String.valueOf(obj[2] != null ? obj[2] : AuditReportUtils.NO_VALUE));
+			element.setNarration(String.valueOf(obj[3] != null ? obj[3] : AuditReportUtils.NO_VALUE));
+			String isActive = (obj[4] != null && (Boolean)obj[4].equals(true)) ? "Active" : "Inactive"; 
+			element.setIsactive(String.valueOf(isActive));
+			element.setType(String.valueOf(obj[5] != null ? obj[5] : AuditReportUtils.NO_VALUE));
+			String lastModifiedDate = String.valueOf(obj[6] != null ? obj[6] : "");			
+			element.setLastModifiedDate(AuditReportUtils.getFormattedDateTime(lastModifiedDate));
+			element.setLastModifiedBy(String.valueOf(obj[7] != null ? obj[7] : AuditReportUtils.NO_VALUE));
+			element.setNameOfmodifyingUser(String.valueOf(obj[8] != null ? obj[8] : AuditReportUtils.NO_VALUE));
+			bankAuditList.add(element);
+			element = null;
+		}
+
+		return bankAuditList;
 	}
 
 }

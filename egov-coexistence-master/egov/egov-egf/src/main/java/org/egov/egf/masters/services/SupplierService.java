@@ -47,6 +47,7 @@
  */
 package org.egov.egf.masters.services;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -67,12 +68,17 @@ import org.egov.commons.service.AccountDetailKeyService;
 import org.egov.commons.service.AccountdetailtypeService;
 import org.egov.commons.service.EntityTypeService;
 import org.egov.egf.masters.repository.SupplierRepository;
+import org.egov.egf.utils.AuditReportUtils;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.validation.exception.ValidationException;
+import org.egov.infstr.services.PersistenceService;
 import org.egov.model.masters.Supplier;
+import org.egov.model.masters.SupplierAudit;
 import org.egov.model.masters.SupplierSearchRequest;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -83,6 +89,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class SupplierService implements EntityTypeService {
+	
+	@Autowired
+	@Qualifier("persistenceService")
+	private PersistenceService persistenceService;
 
 	@Autowired
 	private SupplierRepository supplierRepository;
@@ -201,4 +211,177 @@ public class SupplierService implements EntityTypeService {
 			throws ValidationException {
 		return Collections.emptyList();
 	}
+	
+	public List<String> getSupplierAuditReport(final String supplierId) {
+		
+		List<SupplierAudit> resultList = getSupplierAuditList(supplierId);
+		
+		List<String> modificationsList = new ArrayList<String>();
+
+		if (resultList.size() == 1)
+			return modificationsList;
+		
+		for (int i = 0; i < resultList.size() - 1; i++) {
+			
+			SupplierAudit previousModifiedRow = resultList.get(i);
+			SupplierAudit currentModifiedRow = resultList.get(i+1);
+			String modifications = "";
+			
+			if (!previousModifiedRow.getName().equals(currentModifiedRow.getName())) {
+				modifications = modifications + "Name : " + previousModifiedRow.getName() + " --> "
+						+ currentModifiedRow.getName() + "<br>";
+			}
+			if (!previousModifiedRow.getCode().equals(currentModifiedRow.getCode())) {
+				modifications = modifications + "Code : " + previousModifiedRow.getCode() + " --> "
+						+ currentModifiedRow.getCode() + "<br>";
+			}
+			if (!previousModifiedRow.getCorrespondenceAddress().equals(currentModifiedRow.getCorrespondenceAddress())) {
+				modifications = modifications + "Correspondence Address : " + previousModifiedRow.getCorrespondenceAddress() + " --> "
+						+ currentModifiedRow.getCorrespondenceAddress() + "<br>";
+			}
+			if (!previousModifiedRow.getPaymentAddress().equals(currentModifiedRow.getPaymentAddress())) {
+				modifications = modifications + "Permanent Address : " + previousModifiedRow.getPaymentAddress() + " --> "
+						+ currentModifiedRow.getPaymentAddress() + "<br>";
+			}
+			if (!previousModifiedRow.getContactPerson().equals(currentModifiedRow.getContactPerson())) {
+				modifications = modifications + "Contact Person : " + previousModifiedRow.getContactPerson() + " --> "
+						+ currentModifiedRow.getContactPerson() + "<br>";
+			}
+			if (!previousModifiedRow.getEmail().equals(currentModifiedRow.getEmail())) {
+				modifications = modifications + "Email : " + previousModifiedRow.getEmail() + " --> "
+						+ currentModifiedRow.getEmail() + "<br>";
+			}
+			if (!previousModifiedRow.getNarration().equals(currentModifiedRow.getNarration())) {
+				modifications = modifications + "Narration : " + previousModifiedRow.getNarration() + " --> "
+						+ currentModifiedRow.getNarration() + "<br>";
+			}
+			if (!previousModifiedRow.getPanNumber().equals(currentModifiedRow.getPanNumber())) {
+				modifications = modifications + "Pan # : " + previousModifiedRow.getPanNumber() + " --> "
+						+ currentModifiedRow.getPanNumber() + "<br>";
+			}
+			if (!previousModifiedRow.getTinNumber().equals(currentModifiedRow.getTinNumber())) {
+				modifications = modifications + "Tin # : " + previousModifiedRow.getTinNumber() + " --> "
+						+ currentModifiedRow.getTinNumber() + "<br>";
+			}
+			if (!previousModifiedRow.getMobileNumber().equals(currentModifiedRow.getMobileNumber())) {
+				modifications = modifications + "Mobile # : " + previousModifiedRow.getMobileNumber() + " --> "
+						+ currentModifiedRow.getMobileNumber() + "<br>";
+			}
+			if (!previousModifiedRow.getBank().equals(currentModifiedRow.getBank())) {
+				modifications = modifications + "Bank : " + previousModifiedRow.getBank() + " --> "
+						+ currentModifiedRow.getBank() + "<br>";
+			}
+			if (!previousModifiedRow.getIfscCode().equals(currentModifiedRow.getIfscCode())) {
+				modifications = modifications + "IFSC code : " + previousModifiedRow.getIfscCode() + " --> "
+						+ currentModifiedRow.getIfscCode() + "<br>";
+			}
+			if (!previousModifiedRow.getBankAccount().equals(currentModifiedRow.getBankAccount())) {
+				modifications = modifications + "Bank Account : " + previousModifiedRow.getBankAccount() + " --> "
+						+ currentModifiedRow.getBankAccount() + "<br>";
+			}
+			if (!previousModifiedRow.getRegistrationNumber().equals(currentModifiedRow.getRegistrationNumber())) {
+				modifications = modifications + "Registration Number : " + previousModifiedRow.getRegistrationNumber() + " --> "
+						+ currentModifiedRow.getRegistrationNumber() + "<br>";
+			}
+			if (!previousModifiedRow.getStatus().equals(currentModifiedRow.getStatus())) {
+				modifications = modifications + "Status : " + previousModifiedRow.getStatus() + " --> "
+						+ currentModifiedRow.getStatus() + "<br>";
+			}
+			if (!previousModifiedRow.getEpfNumber().equals(currentModifiedRow.getEpfNumber())) {
+				modifications = modifications + "EPF Number : " + previousModifiedRow.getEpfNumber() + " --> "
+						+ currentModifiedRow.getEpfNumber() + "<br>";
+			}
+			if (!previousModifiedRow.getEsiNumber().equals(currentModifiedRow.getEsiNumber())) {
+				modifications = modifications + "ESI Number : " + previousModifiedRow.getEsiNumber() + " --> "
+						+ currentModifiedRow.getEsiNumber() + "<br>";
+			}
+			if (!previousModifiedRow.getGstRegisteredState().equals(currentModifiedRow.getGstRegisteredState())) {
+				modifications = modifications + "GST : " + previousModifiedRow.getGstRegisteredState() + " --> "
+						+ currentModifiedRow.getGstRegisteredState() + "<br>";
+			}
+			
+			String previousSupplierType = previousModifiedRow.getSupplierType().toLowerCase();
+			String currentSupplierType = currentModifiedRow.getSupplierType().toLowerCase();
+			
+			if (!previousSupplierType.equals(currentSupplierType)) {
+				modifications = modifications + "Supplier Type : " + previousModifiedRow.getSupplierType() + " --> "
+						+ currentModifiedRow.getSupplierType() + "<br>";
+			}
+			
+			if (modifications.length() > 0) {
+				modificationsList.add("User : "+currentModifiedRow.getNameOfmodifyingUser() + "<br>"
+						+ "Modification date-time : " +currentModifiedRow.getLastModifiedDate() + "<br><br>" + modifications);
+			}
+			
+		}
+		
+		return modificationsList;
+	}
+	
+	private List<SupplierAudit> getSupplierAuditList(final String supplierId){
+		
+		final StringBuilder queryStr = new StringBuilder();
+		queryStr.append("select efg_sup_aud.id, efg_sup_aud.code, efg_sup_aud.name, efg_sup_aud.correspondenceaddress, efg_sup_aud.paymentaddress, efg_sup_aud.contactperson, ")
+				.append(" efg_sup_aud.email, efg_sup_aud.narration, efg_sup_aud.pannumber, efg_sup_aud.tinnumber, efg_sup_aud.mobilenumber, ")
+				.append(" efg_sup_aud.ifsccode, efg_sup_aud.bankaccount, efg_sup_aud.registrationnumber, efg_sup_aud.lastmodifiedby, ")
+				.append(" efg_sup_aud.lastmodifieddate, efg_sup_aud.epfnumber, efg_sup_aud.esinumber, efg_sup_aud.gstregisteredstate, efg_sup_aud.suppliertype, efg_sup_aud.nameofmodifyinguser, ")
+				.append(" bnk.name as bankName, egws.description ")
+				.append(" from egf_supplier_aud efg_sup_aud LEFT JOIN bank bnk ON efg_sup_aud.bank=bnk.id LEFT JOIN egw_status egws ON egws.id=efg_sup_aud.status where efg_sup_aud.id=:supplierId order by efg_sup_aud.lastmodifieddate NULLS FIRST");
+		SQLQuery queryResult = persistenceService.getSession().createSQLQuery(queryStr.toString());
+		queryResult.setLong("supplierId", Long.valueOf(supplierId));
+		final List<Object[]> supplierAuditListFromQuery = queryResult.list();
+		
+		List<SupplierAudit> supplierAuditList = new ArrayList<SupplierAudit>();
+		
+		for (Object[] obj : supplierAuditListFromQuery) {
+			SupplierAudit element = new SupplierAudit();
+			element.setId(String.valueOf(obj[0] != null ? obj[0] : AuditReportUtils.NO_VALUE));
+			element.setCode(String.valueOf(obj[1] != null ? obj[1] : AuditReportUtils.NO_VALUE));
+			element.setName(String.valueOf(obj[2] != null ? obj[2] : AuditReportUtils.NO_VALUE));
+			element.setCorrespondenceAddress(String.valueOf(obj[3] != null ? obj[3] : AuditReportUtils.NO_VALUE));
+			element.setPaymentAddress(String.valueOf(obj[4] != null ? obj[4] : AuditReportUtils.NO_VALUE));
+			element.setContactPerson(String.valueOf(obj[5] != null ? obj[5] : AuditReportUtils.NO_VALUE));
+			element.setEmail(String.valueOf(obj[6] != null ? obj[6] : AuditReportUtils.NO_VALUE));
+			element.setNarration(String.valueOf(obj[7] != null ? obj[7] : AuditReportUtils.NO_VALUE));
+			element.setPanNumber(String.valueOf(obj[8] != null ? obj[8] : AuditReportUtils.NO_VALUE));
+			element.setTinNumber(String.valueOf(obj[9] != null ? obj[9] : AuditReportUtils.NO_VALUE));
+			element.setMobileNumber(String.valueOf(obj[10] != null ? obj[10] : AuditReportUtils.NO_VALUE));
+			element.setIfscCode(String.valueOf(obj[11] != null ? obj[11] : AuditReportUtils.NO_VALUE));
+			element.setBankAccount(String.valueOf(obj[12] != null ? obj[12] : AuditReportUtils.NO_VALUE));
+			element.setRegistrationNumber(String.valueOf(obj[13] != null ? obj[13] : AuditReportUtils.NO_VALUE));
+			element.setLastModifiedBy(String.valueOf(obj[14] != null ? obj[14] : AuditReportUtils.NO_VALUE));
+			String lastModifiedDate = String.valueOf(obj[15] != null ? obj[15] : "");	
+			element.setLastModifiedDate(AuditReportUtils.getFormattedDateTime(lastModifiedDate));
+			element.setEpfNumber(String.valueOf(obj[16] != null ? obj[16] : AuditReportUtils.NO_VALUE));
+			element.setEsiNumber(String.valueOf(obj[17] != null ? obj[17] : AuditReportUtils.NO_VALUE));
+			element.setGstRegisteredState(String.valueOf(obj[18] != null ? obj[18] : AuditReportUtils.NO_VALUE));
+			element.setSupplierType(String.valueOf(obj[19] != null ? obj[19] : AuditReportUtils.NO_VALUE));
+			element.setNameOfmodifyingUser(String.valueOf(obj[20] != null ? obj[20] : AuditReportUtils.NO_VALUE));
+			element.setBank(String.valueOf(obj[21] != null ? obj[21] : AuditReportUtils.NO_VALUE));
+			String isActive = String.valueOf(obj[22] != null ? obj[22] : AuditReportUtils.NO_VALUE);
+			element.setStatus(isActive);
+			supplierAuditList.add(element);
+			element = null;
+		}		
+		
+		return supplierAuditList;
+	}	
+	
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

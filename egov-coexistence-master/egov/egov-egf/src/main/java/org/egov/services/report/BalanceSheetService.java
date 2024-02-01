@@ -171,7 +171,11 @@ public class BalanceSheetService extends ReportService {
         } catch (final HibernateException exp)
         {
 
-        }
+        } catch (final ApplicationRuntimeException exp)
+        {
+
+        } 
+        
     }
 
 	public void addExcessIEForCurrentYear(final Statement balanceSheet, final List<Fund> fundList,
@@ -373,7 +377,8 @@ public class BalanceSheetService extends ReportService {
         // add the total row for the last grouping
         final StatementEntry sheetEntry = new StatementEntry(null, Constants.TOTAL, "", previousTotal, currentTotal, true);
         sheetEntry.setFundWiseAmount(fundTotals);
-        list.add(list.size() - 1, sheetEntry);
+        //list.add(list.size() - 1, sheetEntry);
+        list.add(sheetEntry);
         balanceSheet.setEntries(list);
     }
 

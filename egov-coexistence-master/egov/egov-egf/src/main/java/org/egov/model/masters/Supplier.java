@@ -70,6 +70,10 @@ import org.egov.infra.persistence.validator.annotation.Required;
 import org.egov.infra.persistence.validator.annotation.Unique;
 import org.egov.infra.validation.regex.Constants;
 import org.egov.utils.FinancialConstants;
+import org.hibernate.envers.AuditOverride;
+import org.hibernate.envers.AuditOverrides;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -77,6 +81,11 @@ import org.hibernate.validator.constraints.SafeHtml;
 @Table(name = "EGF_SUPPLIER")
 @Unique(fields = { "code", "registrationNumber" }, id = "id", tableName = "EGF_SUPPLIER", enableDfltMsg = true)
 @SequenceGenerator(name = Supplier.SEQ_EGF_SUPPLIER, sequenceName = Supplier.SEQ_EGF_SUPPLIER, allocationSize = 1)
+@Audited
+@AuditOverrides({
+    @AuditOverride(forClass = AbstractAuditable.class, name = "lastModifiedBy"),
+    @AuditOverride(forClass = AbstractAuditable.class, name = "lastModifiedDate")
+})
 public class Supplier extends AbstractAuditable implements EntityType {
 
     private static final long serialVersionUID = 2507334170114202599L;
@@ -142,6 +151,7 @@ public class Supplier extends AbstractAuditable implements EntityType {
 
     @ManyToOne
     @JoinColumn(name = "bank")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Bank bank;
 
     @SafeHtml
@@ -168,6 +178,7 @@ public class Supplier extends AbstractAuditable implements EntityType {
     @ManyToOne
     @NotNull
     @JoinColumn(name = "status")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private EgwStatus status;
 
     @SafeHtml
@@ -186,7 +197,19 @@ public class Supplier extends AbstractAuditable implements EntityType {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "suppliertype")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private SupplierTypeEnum supplierType;
+    
+    @Column(name = "nameofmodifyinguser")
+    private String nameOfmodifyingUser;        
+
+	public String getNameOfmodifyingUser() {
+		return nameOfmodifyingUser;
+	}
+
+	public void setNameOfmodifyingUser(String nameOfmodifyingUser) {
+		this.nameOfmodifyingUser = nameOfmodifyingUser;
+	}
 
     @Override
     public String getCode() {

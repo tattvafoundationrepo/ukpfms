@@ -17,8 +17,8 @@ org/egov/collection/web/actions/receipts/AjaxChallanApprovalAction.class
 org/egov/collection/web/actions/reports/RemittanceStatementReportAction.class
 org/egov/collection/web/actions/reports/CollectionSummaryAction.class
 org/egov/collection/web/actions/reports/CashCollectionReportAction.class
-org/egov/collection/web/actions/receipts/CollectionsWorkflowAction.class
 org/egov/collection/web/actions/receipts/SearchChallanAction.class
+org/egov/collection/web/actions/receipts/CollectionsWorkflowAction.class
 org/egov/collection/web/actions/receipts/SearchReceiptAction.class
 org/egov/collection/web/controller/report/ChequeDishonouredReportController.class
 org/egov/collection/web/actions/receipts/ReceiptNumberSearchAction.class

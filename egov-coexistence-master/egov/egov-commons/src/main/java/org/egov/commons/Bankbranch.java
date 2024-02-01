@@ -66,10 +66,15 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.egov.commons.utils.CommonsConstants;
+import org.egov.infra.persistence.entity.AbstractAuditableForIntegerId;
 import org.egov.infra.persistence.entity.AbstractPersistable;
 import org.egov.infra.persistence.validator.annotation.OptionalPattern;
 import org.egov.infra.persistence.validator.annotation.Unique;
 import org.egov.infra.validation.regex.Constants;
+import org.hibernate.envers.AuditJoinTable;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -79,7 +84,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Table(name = "BANKBRANCH")
 @SequenceGenerator(name = Bankbranch.SEQ_BANKBRANCH, sequenceName = Bankbranch.SEQ_BANKBRANCH, allocationSize = 1)
 @Unique(fields = { "branchMICR" }, enableDfltMsg = true)
-public class Bankbranch extends AbstractPersistable<Integer> {
+@Audited
+public class Bankbranch extends AbstractAuditableForIntegerId {
 
     private static final long serialVersionUID = -1445070413847273114L;
 
@@ -92,6 +98,7 @@ public class Bankbranch extends AbstractPersistable<Integer> {
     @ManyToOne
     @NotNull
     @JoinColumn(name = "bankid")
+    @Audited(targetAuditMode = RelationTargetAuditMode.AUDITED)
     private Bank bank;
 
     @NotNull
@@ -153,6 +160,7 @@ public class Bankbranch extends AbstractPersistable<Integer> {
 
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "bankbranch", targetEntity = Bankaccount.class)
     @JsonIgnore
+    @NotAudited
     private Set<Bankaccount> bankaccounts = new HashSet<>(0);
 
     @JsonIgnore
@@ -166,6 +174,17 @@ public class Bankbranch extends AbstractPersistable<Integer> {
 
     @JsonIgnore
     private Date lastModifiedDate;
+    
+    @Column(name = "nameofmodifyinguser")
+    private String nameOfmodifyingUser;        
+
+	public String getNameOfmodifyingUser() {
+		return nameOfmodifyingUser;
+	}
+
+	public void setNameOfmodifyingUser(String nameOfmodifyingUser) {
+		this.nameOfmodifyingUser = nameOfmodifyingUser;
+	}
 
     public boolean isAccountsExist() {
         return bankaccounts != null && !bankaccounts.isEmpty();

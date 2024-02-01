@@ -57,6 +57,7 @@ import org.egov.commons.contracts.BankBranchSearchRequest;
 import org.egov.egf.commons.bank.service.CreateBankService;
 import org.egov.egf.commons.bankbranch.service.CreateBankBranchService;
 import org.egov.egf.web.controller.bankbranch.adaptor.BankBranchJsonAdaptor;
+import org.egov.infra.microservice.utils.MicroserviceUtils;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -69,6 +70,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -87,6 +89,9 @@ public class BankBranchController {
 	private static final String BANKBRANCH = "bankbranch";
 
 	private static final String BANKBRANCH_SEARCH_REQUEST = "bankbranchSearchRequest";
+	
+	@Autowired
+	private MicroserviceUtils microserviceUtils;
 
 	@Autowired
 	private CreateBankBranchService createBankBranchService;
@@ -152,6 +157,7 @@ public class BankBranchController {
 			model.addAttribute(BANKBRANCH, bankbranch);
 			return "bankbranch-new";
 		}
+		bankbranch.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		createBankBranchService.create(bankbranch);
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.bankbranch.success", null, null));
 		return "redirect:/bankbranch/success/" + bankbranch.getId() + "/create";
@@ -165,6 +171,7 @@ public class BankBranchController {
 			model.addAttribute(BANKBRANCH, bankbranch);
 			return "bankbranch-update";
 		}
+		bankbranch.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		createBankBranchService.update(bankbranch);
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.bankbranch.success", null, null));
 		return "redirect:/bankbranch/success/" + bankbranch.getId() + "/view";
@@ -183,5 +190,13 @@ public class BankBranchController {
 		final Gson gson = gsonBuilder.registerTypeAdapter(Bankbranch.class, new BankBranchJsonAdaptor()).create();
 		return gson.toJson(object);
 	}
+	
+	@GetMapping(value = "/bank-branch-audit")
+	public @ResponseBody List<String> getBankAudit(@RequestParam("bankBranchId") @SafeHtml final String bankBranchId) {
+		
+		return createBankBranchService.getBankBranchAuditReport(bankBranchId);
+	}
+	
+	
 
 }

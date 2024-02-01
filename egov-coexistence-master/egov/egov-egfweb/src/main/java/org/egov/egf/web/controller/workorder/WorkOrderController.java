@@ -76,6 +76,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -142,7 +143,8 @@ public class WorkOrderController {
 			prepareNewForm(model);
 			return NEW;
 		}
-
+		
+		workOrder.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		workOrderService.create(workOrder);
 
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.workOrder.success", null, null));
@@ -167,6 +169,7 @@ public class WorkOrderController {
 			prepareNewForm(model);
 			return EDIT;
 		}
+		workOrder.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		workOrderService.update(workOrder);
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.workOrder.success", null, null));
 		return "redirect:/workorder/result/" + workOrder.getId() + "/view";
@@ -218,6 +221,12 @@ public class WorkOrderController {
 	private void populateDepartmentName(WorkOrder workOrder) {
 		Department dept = microserviceUtils.getDepartmentByCode(workOrder.getDepartment());
 		workOrder.setDepartmentName(dept.getName());
+	}
+	
+	@GetMapping(value = "/work-order-audit")
+	public @ResponseBody List<String> getWorkOrderAudit(@RequestParam("workOrderId") @SafeHtml final String workOrderId) {
+		
+		return workOrderService.getWorkOrderAuditReport(workOrderId);
 	}
 
 }

@@ -95,22 +95,18 @@ public class ChartOfAccountsService extends PersistenceService<CChartOfAccounts,
         return findAllBy("select acc from CChartOfAccounts acc where acc.isActiveForPosting=true order by acc.glcode");
 
     }
+    
+    public List<CChartOfAccounts> getActiveCodeListWithFourClassification() {
+
+        return findAllBy("select acc from CChartOfAccounts acc where acc.isActiveForPosting=true and acc.classification=4 order by acc.glcode");
+
+    }
 
     public List<CChartOfAccounts> getAllAccountCodes(final String glcode) {
 
         final Query entitysQuery = getSession()
                 .createQuery(
                         " from CChartOfAccounts a where a.isActiveForPosting=true and a.classification=4 and (a.glcode like :glcode or lower(a.name) like :name) order by a.glcode");
-        entitysQuery.setString(GLCODE, glcode + "%");
-        entitysQuery.setString("name", glcode.toLowerCase() + "%");
-        return entitysQuery.list();
-
-    }
-    public List<CChartOfAccounts> getAllAccountCodes1(final String glcode) {
-
-        final Query entitysQuery = getSession()
-                .createQuery(
-                        " from CChartOfAccounts a where where type IN ('A','E') order by a.glcode");
         entitysQuery.setString(GLCODE, glcode + "%");
         entitysQuery.setString("name", glcode.toLowerCase() + "%");
         return entitysQuery.list();

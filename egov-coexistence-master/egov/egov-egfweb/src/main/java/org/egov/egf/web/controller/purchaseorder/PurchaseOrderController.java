@@ -52,17 +52,13 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.egov.commons.CChartOfAccounts;
-import org.egov.commons.dao.ChartOfAccountsHibernateDAO;
 import org.egov.commons.service.FundService;
-import org.egov.egf.masters.repository.PurchaseItemRepository;
 import org.egov.egf.masters.services.PurchaseOrderService;
 import org.egov.egf.masters.services.SupplierService;
 import org.egov.egf.web.adaptor.PurchaseOrderJsonAdaptor;
 import org.egov.infra.microservice.models.Department;
 import org.egov.infra.microservice.utils.MicroserviceUtils;
 import org.egov.model.bills.EgBillregister;
-import org.egov.model.masters.PurchaseItems;
 import org.egov.model.masters.PurchaseOrder;
 import org.egov.model.masters.PurchaseOrderSearchRequest;
 import org.egov.services.bills.EgBillRegisterService;
@@ -70,12 +66,10 @@ import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -104,7 +98,6 @@ public class PurchaseOrderController {
 	private static final String EDIT = "purchaseorder-edit";
 	private static final String VIEW = "purchaseorder-view";
 	private static final String SEARCH = "purchaseorder-search";
-	private static final String ITEMS = "purchaseorder-items";
 
 	@Autowired
 	private FundService fundService;
@@ -123,12 +116,6 @@ public class PurchaseOrderController {
 
 	@Autowired
 	private EgBillRegisterService egBillRegisterService;
-	
-	@Autowired
-	private PurchaseItemRepository purchaseItemRepository;
-	
-	@Autowired
-	private ChartOfAccountsHibernateDAO chartOfAccountsHibernateDAO;
 
 	@InitBinder
 	public void initBinder(WebDataBinder binder) {
@@ -139,13 +126,7 @@ public class PurchaseOrderController {
 		model.addAttribute("funds", fundService.findAllActiveAndIsnotleaf());
 		model.addAttribute("departments", microserviceUtils.getDepartments());
 		model.addAttribute("suppliers", supplierService.getAllActiveEntities(null));
-		
 	}
-	
-	@GetMapping(value = "/ajax/getAccountCodeAndName")
-    public @ResponseBody List<CChartOfAccounts> getAccounts(@RequestParam("accountCode") @SafeHtml String accountCode) {
-        return chartOfAccountsHibernateDAO.findDetailedAccountCodesByGlcodeOrNameLike(accountCode);
-    }
 
 	@PostMapping(value = "/newform")
 	public String showNewForm(@ModelAttribute(PURCHASE_ORDER) final PurchaseOrder purchaseOrder, final Model model) {
@@ -153,13 +134,6 @@ public class PurchaseOrderController {
 		model.addAttribute(PURCHASE_ORDER, new PurchaseOrder());
 		return NEW;
 	}
-	
-	@DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePurchaseItem(@PathVariable Long id) {
-        // Delete the purchase item based on the provided ID
-        purchaseOrderService.deletePurchaseItemById(id);
-        return ResponseEntity.ok("Purchase item deleted successfully");
-    }
 
 	@PostMapping(value = "/create")
 	public String create(@Valid @ModelAttribute final PurchaseOrder purchaseOrder, final BindingResult errors,
@@ -170,10 +144,8 @@ public class PurchaseOrderController {
 			return NEW;
 		}
 		
-		System.out.println("purchaseOrder : "+purchaseOrder);
-		
+		purchaseOrder.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		purchaseOrderService.create(purchaseOrder);
-		
 
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.purchaseOrder.success", null, null));
 
@@ -184,11 +156,9 @@ public class PurchaseOrderController {
 	public String edit(@PathVariable("id") final Long id, final Model model) {
 		final PurchaseOrder purchaseOrder = purchaseOrderService.getById(id);
 		List<EgBillregister> bills = egBillRegisterService.getBillsByWorkOrderNumber(purchaseOrder.getOrderNumber());
-		List<PurchaseItems> purchaseItems = purchaseItemRepository.findByPurchaseOrder(purchaseOrder);
 		purchaseOrder.setEditAllFields(bills.isEmpty());
 		prepareNewForm(model);
 		model.addAttribute(PURCHASE_ORDER, purchaseOrder);
-		model.addAttribute("purchaseItems",purchaseItems);
 		return EDIT;
 	}
 
@@ -199,6 +169,7 @@ public class PurchaseOrderController {
 			prepareNewForm(model);
 			return EDIT;
 		}
+		purchaseOrder.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		purchaseOrderService.update(purchaseOrder);
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.purchaseOrder.success", null, null));
 		return "redirect:/purchaseorder/result/" + purchaseOrder.getId() + "/view";
@@ -207,11 +178,9 @@ public class PurchaseOrderController {
 	@GetMapping(value = "/view/{id}")
 	public String view(@PathVariable("id") final Long id, final Model model) {
 		final PurchaseOrder purchaseOrder = purchaseOrderService.getById(id);
-		List<PurchaseItems> purchaseItems = purchaseItemRepository.findByPurchaseOrder(purchaseOrder);
 		populateDepartmentName(purchaseOrder);
 		prepareNewForm(model);
 		model.addAttribute(PURCHASE_ORDER, purchaseOrder);
-		model.addAttribute("purchaseItems",purchaseItems);
 		model.addAttribute("mode", "view");
 		return VIEW;
 	}
@@ -243,10 +212,8 @@ public class PurchaseOrderController {
 	public String result(@PathVariable("id") final Long id, @PathVariable("mode") @SafeHtml final String mode,
 			final Model model) {
 		final PurchaseOrder purchaseOrder = purchaseOrderService.getById(id);
-		List<PurchaseItems> purchaseItems = purchaseItemRepository.findByPurchaseOrder(purchaseOrder);
 		populateDepartmentName(purchaseOrder);
 		model.addAttribute(PURCHASE_ORDER, purchaseOrder);
-		model.addAttribute("purchaseItems",purchaseItems);
 		model.addAttribute("mode", mode);
 		return RESULT;
 	}
@@ -254,6 +221,12 @@ public class PurchaseOrderController {
 	private void populateDepartmentName(PurchaseOrder purchaseOrder) {
 		Department dept = microserviceUtils.getDepartmentByCode(purchaseOrder.getDepartment());
 		purchaseOrder.setDepartmentName(dept.getName());
+	}
+	
+	@GetMapping(value = "/purchase-order-audit")
+	public @ResponseBody List<String> getPurchaseOrderAudit(@RequestParam("purchaseOrderId") @SafeHtml final String purchaseOrderId) {
+		
+		return purchaseOrderService.getPurchaseOrderAuditReport(purchaseOrderId);
 	}
 
 }

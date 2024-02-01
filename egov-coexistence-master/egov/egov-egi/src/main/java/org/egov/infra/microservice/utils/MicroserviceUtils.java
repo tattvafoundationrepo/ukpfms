@@ -1334,7 +1334,7 @@ public class MicroserviceUtils {
 	}
 
 	public void savetoRedis(String sessionId, String key, Object obj) {
-		redisTemplate.opsForHash().putIfAbsent(sessionId, key, obj);
+		redisTemplate.opsForHash().putIfAbsent(sessionId, key, obj);		
 	}
 
 	public void setExpire(String key) {
@@ -1439,64 +1439,34 @@ public class MicroserviceUtils {
 		}
 	}
 
-	
-	  public Object getMdmsData(List<ModuleDetail> moduleDetails, boolean  isStateLevel, String tenantId, String token) 
-	  { 
-		  String mdmsUrl =  appConfigManager.getEgovMdmsSerHost() + this.mdmsSearchUrl; 
-		  RequestInfo  requestInfo = new RequestInfo(); 
-		  requestInfo.setAuthToken(token != null && !token.isEmpty() ? token : getUserToken()); 
-		  MdmsCriteria mdmscriteria = new MdmsCriteria(); 
-		  if (tenantId == null) 
-		  { 
-			  if (isStateLevel) 
-			  {
-				  mdmscriteria.setTenantId(getTenentId().split(Pattern.quote("."))[0]); 
-			  } 
-			  else
-			  { 
-				  mdmscriteria.setTenantId(getTenentId()); 
-			  } 
-		  } 
-		  else 
-		  {
-			  mdmscriteria.setTenantId(tenantId); 
-		  }
-		  mdmscriteria.setModuleDetails(moduleDetails); 
-		  MdmsCriteriaReq mdmsrequest = new MdmsCriteriaReq(); 
-		  mdmsrequest.setRequestInfo(requestInfo);
-		  mdmsrequest.setMdmsCriteria(mdmscriteria);
-		  return  restTemplate.postForObject(mdmsUrl, mdmsrequest, Map.class); 
+	public Object getMdmsData(List<ModuleDetail> moduleDetails, boolean isStateLevel, String tenantId, String token) {
+		String mdmsUrl = appConfigManager.getEgovMdmsSerHost() + this.mdmsSearchUrl;
+		RequestInfo requestInfo = new RequestInfo();
+		requestInfo.setAuthToken(token != null && !token.isEmpty() ? token : getUserToken());
+		MdmsCriteria mdmscriteria = new MdmsCriteria();
+		if (tenantId == null) {
+			if (isStateLevel) {
+				mdmscriteria.setTenantId(getTenentId().split(Pattern.quote("."))[0]);
+			} else {
+				mdmscriteria.setTenantId(getTenentId());
+			}
+		} else {
+			mdmscriteria.setTenantId(tenantId);
+		}
+		mdmscriteria.setModuleDetails(moduleDetails);
+		MdmsCriteriaReq mdmsrequest = new MdmsCriteriaReq();
+		mdmsrequest.setRequestInfo(requestInfo);
+		mdmsrequest.setMdmsCriteria(mdmscriteria);
+		return restTemplate.postForObject(mdmsUrl, mdmsrequest, Map.class);
 	}
-	 
-	
-	/*
-	 * public Object getMdmsData(List<ModuleDetail> moduleDetails, boolean
-	 * isStateLevel, String tenantId, String token) { String mdmsUrl =
-	 * appConfigManager.getEgovMdmsSerHost() + this.mdmsSearchUrl; RequestInfo
-	 * requestInfo = new RequestInfo(); requestInfo.setAuthToken(token != null &&
-	 * !token.isEmpty() ? token : getUserToken()); MdmsCriteria mdmscriteria = new
-	 * MdmsCriteria();
-	 * 
-	 * String tenantIdToSet; if (tenantId == null) { if (isStateLevel) { String
-	 * tenentId = getTenentId(); tenantIdToSet = tenentId != null ?
-	 * tenentId.split(Pattern.quote("."))[0] : null; } else { tenantIdToSet =
-	 * getTenentId(); } } else { tenantIdToSet = tenantId; }
-	 * mdmscriteria.setTenantId(tenantIdToSet);
-	 * mdmscriteria.setModuleDetails(moduleDetails); MdmsCriteriaReq mdmsrequest =
-	 * new MdmsCriteriaReq(); mdmsrequest.setRequestInfo(requestInfo);
-	 * mdmsrequest.setMdmsCriteria(mdmscriteria);
-	 * 
-	 * return restTemplate.postForObject(mdmsUrl, mdmsrequest, Map.class); }
-	 */
-	
+
 	public String getHeaderNameForTenant() {
 		String ulbGrade = "";
 		List<ModuleDetail> moduleDetailList = new ArrayList<>();
 		String tenentId = getTenentId();
 		try {
 			this.prepareModuleDetails(moduleDetailList, "tenant", "tenants", "code", tenentId, String.class);
-			Map postForObject = mapper.convertValue(this.getMdmsData(moduleDetailList, true, null, null), Map.class);			
-	       			
+			Map postForObject = mapper.convertValue(this.getMdmsData(moduleDetailList, true, null, null), Map.class);
 			if (postForObject != null) {
 				ulbGrade = mapper.convertValue(
 						JsonPath.read(postForObject, "$.MdmsRes.tenant.tenants[0].city.ulbGrade"), String.class);

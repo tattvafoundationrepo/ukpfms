@@ -49,6 +49,73 @@
 
 <%@ page contentType="text/html;charset=UTF-8" language="java"%>
 <%@ include file="/includes/taglibs.jsp"%>
+
+
+<style>
+#inner-output-div {
+	border: 1px solid #ccc;
+	padding: 10px;
+	margin: 5px;
+}
+</style>
+<script>
+window.onload = function() {
+    
+    makeGetRequest();
+};
+
+function makeGetRequest() {
+
+	const bankAccountId = document.getElementById("bankAccountId");
+
+	var xhr = new XMLHttpRequest();
+
+    // Configure the GET request
+    xhr.open("GET", "/services/EGF/bankaccount/bank-account-audit?bankAccountId="+bankAccountId.value, true);
+
+    // Set up the callback function to handle the response
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            
+            var jsonArray = JSON.parse(xhr.responseText);            
+            generateDivs(jsonArray);
+            console.log(xhr.responseText);
+        }
+    };
+
+    // Send the GET request
+    xhr.send();
+}
+
+function generateDivs(jsonArray) {
+	
+    // Get the reference to the output div
+    const outputDiv = document.getElementById('output-div');
+
+    // Iterate over the JSON array and display elements inside the div
+    for (let i = jsonArray.length - 1; i >= 0 ; i--) {
+        const currentItem = jsonArray[i];
+
+        // Create a div element for each item
+        const itemDiv = document.createElement('div');
+        itemDiv.setAttribute('id', 'inner-output-div');
+        // Set the content of the div (you can customize this based on your JSON structure)
+        //itemDiv.textContent = '<strong>'+currentItem.name+'</strong>';
+        itemDiv.innerHTML = currentItem+'<br><br>';
+
+        // Append the div to the output div
+        outputDiv.appendChild(itemDiv);
+    }
+}
+
+
+
+
+
+</script>
+
+
+
 <div class="row">
 	<div class="col-md-12">
 		<div class="panel panel-primary" data-collapsed="0">
@@ -65,6 +132,7 @@
 					<div class="col-sm-3 add-margin view-content">${bankaccount.accountnumber}</div>
 					<div class="col-xs-3 add-margin">
 						<spring:message code="lbl.bankbranch" text="Bank Branch"/>
+						<input type="hidden" id="bankAccountId" value='${bankaccount.id}' />
 					</div>
 					<div class="col-sm-3 add-margin view-content">${bankaccount.bankbranch.branchname}</div>
 				</div>
@@ -121,3 +189,6 @@
 		</div>
 	</div>
 </div>
+
+<div id="output-div"></div>
+

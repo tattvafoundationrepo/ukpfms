@@ -49,6 +49,7 @@ package org.egov.egf.web.actions.masters;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -72,6 +73,7 @@ import org.egov.commons.EgfAccountcodePurpose;
 import org.egov.commons.dao.ChartOfAccountsHibernateDAO;
 import org.egov.commons.service.AccountdetailtypeService;
 import org.egov.infra.admin.master.service.AppConfigValueService;
+import org.egov.infra.microservice.utils.MicroserviceUtils;
 import org.egov.infra.utils.DateUtils;
 import org.egov.infra.validation.exception.ValidationError;
 import org.egov.infra.validation.exception.ValidationException;
@@ -159,6 +161,9 @@ public class ChartOfAccountsAction extends BaseFormAction {
 
 	@Autowired
 	private AccountdetailtypeService accountdetailtypeService;
+	
+	@Autowired
+	private MicroserviceUtils microserviceUtils;
 
 	@Override
 	public Object getModel() {
@@ -294,6 +299,8 @@ public class ChartOfAccountsAction extends BaseFormAction {
 		model.setIsActiveForPosting(activeForPosting);
 		model.setFunctionReqd(functionRequired);
 		model.setBudgetCheckReq(budgetCheckRequired);
+		model.setLastModifiedDate(new Date());
+		model.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		dropdownData.put("mappedAccountDetailTypeList", accountDetailType);
 		chartOfAccountsService.persist(model);
 		saveCoaDetails(model);
@@ -580,6 +587,7 @@ public class ChartOfAccountsAction extends BaseFormAction {
 		populateAccountDetailType();
 		model.setMajorCode(model.getGlcode().substring(0, majorCodeLength));
 		model.setCreatedDate(DateUtils.now());
+		model.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		chartOfAccountsService.persist(model);
 		saveCoaDetails(model);
 		addActionMessage(getText("chartOfAccount.saved.successfully"));
