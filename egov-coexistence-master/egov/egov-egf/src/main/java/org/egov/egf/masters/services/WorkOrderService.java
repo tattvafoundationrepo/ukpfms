@@ -68,14 +68,19 @@ import org.egov.commons.service.AccountdetailtypeService;
 import org.egov.commons.service.EntityTypeService;
 import org.egov.commons.service.FundService;
 import org.egov.egf.masters.repository.WorkOrderRepository;
+import org.egov.egf.utils.AuditReportUtils;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.validation.exception.ValidationException;
+import org.egov.infstr.services.PersistenceService;
 import org.egov.model.masters.WorkOrder;
+import org.egov.model.masters.WorkOrderAudit;
 import org.egov.model.masters.WorkOrderSearchRequest;
 import org.egov.services.masters.SchemeService;
 import org.egov.services.masters.SubSchemeService;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,6 +91,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class WorkOrderService implements EntityTypeService {
+	
+	@Autowired
+	@Qualifier("persistenceService")
+	private PersistenceService persistenceService;
 
 	@Autowired
 	private WorkOrderRepository workOrderRepository;
@@ -277,5 +286,138 @@ public class WorkOrderService implements EntityTypeService {
 			throws ValidationException {
 		return Collections.emptyList();
 	}
+	
+	public List<String> getWorkOrderAuditReport(final String workOrderId) {
+
+		List<WorkOrderAudit> resultList = getWorkOrderAuditList(workOrderId);
+
+		List<String> modificationsList = new ArrayList<String>();
+
+		if (resultList.size() == 1)
+			return modificationsList;
+
+		for (int i = 0; i < resultList.size() - 1; i++) {
+
+			WorkOrderAudit previousModifiedRow = resultList.get(i);
+			WorkOrderAudit currentModifiedRow = resultList.get(i + 1);
+			String modifications = "";
+
+			if (!previousModifiedRow.getName().equals(currentModifiedRow.getName())) {
+				modifications = modifications + "Name : " + previousModifiedRow.getName() + " --> "
+						+ currentModifiedRow.getName() + "<br>";
+			}
+			if (!previousModifiedRow.getOrderNumber().equals(currentModifiedRow.getOrderNumber())) {
+				modifications = modifications + "Order Number : " + previousModifiedRow.getOrderNumber() + " --> "
+						+ currentModifiedRow.getOrderNumber() + "<br>";
+			}			
+			if (!previousModifiedRow.getOrderDate().equals(currentModifiedRow.getOrderDate())) {
+				modifications = modifications + "Order Date : " + previousModifiedRow.getOrderDate()
+						+ " --> " + currentModifiedRow.getOrderDate() + "<br>";
+			}
+			if (!previousModifiedRow.getOrderValue().equals(currentModifiedRow.getOrderValue())) {
+				modifications = modifications + "Order Value : " + previousModifiedRow.getOrderValue()
+						+ " --> " + currentModifiedRow.getOrderValue() + "<br>";
+			}
+			if (!previousModifiedRow.getContractor().equals(currentModifiedRow.getContractor())) {
+				modifications = modifications + "Contractor : " + previousModifiedRow.getContractor()
+						+ " --> " + currentModifiedRow.getContractor() + "<br>";
+			}
+			if (!previousModifiedRow.getAdvancePayable().equals(currentModifiedRow.getAdvancePayable())) {
+				modifications = modifications + "Advance Payble : " + previousModifiedRow.getAdvancePayable()
+						+ " --> " + currentModifiedRow.getAdvancePayable() + "<br>";
+			}
+			if (!previousModifiedRow.getDescription().equals(currentModifiedRow.getDescription())) {
+				modifications = modifications + "Description : " + previousModifiedRow.getDescription()
+						+ " --> " + currentModifiedRow.getDescription() + "<br>";
+			}
+			if (!previousModifiedRow.getFund().equals(currentModifiedRow.getFund())) {
+				modifications = modifications + "Fund : " + previousModifiedRow.getFund()
+						+ " --> " + currentModifiedRow.getFund() + "<br>";
+			}
+			if (!previousModifiedRow.getDepartment().equals(currentModifiedRow.getDepartment())) {
+				modifications = modifications + "Department : " + previousModifiedRow.getDepartment()
+						+ " --> " + currentModifiedRow.getDepartment() + "<br>";
+			}
+			if (!previousModifiedRow.getScheme().equals(currentModifiedRow.getScheme())) {
+				modifications = modifications + "Scheme : " + previousModifiedRow.getScheme()
+						+ " --> " + currentModifiedRow.getScheme() + "<br>";
+			}
+			if (!previousModifiedRow.getSubScheme().equals(currentModifiedRow.getSubScheme())) {
+				modifications = modifications + "Sub-Scheme : " + previousModifiedRow.getSubScheme()
+						+ " --> " + currentModifiedRow.getSubScheme() + "<br>";
+			}
+			if (!previousModifiedRow.getSanctionNumber().equals(currentModifiedRow.getSanctionNumber())) {
+				modifications = modifications + "Sanction Number : " + previousModifiedRow.getSanctionNumber()
+						+ " --> " + currentModifiedRow.getSanctionNumber() + "<br>";
+			}
+			if (!previousModifiedRow.getSanctionDate().equals(currentModifiedRow.getSanctionDate())) {
+				modifications = modifications + "Sanction Date : " + previousModifiedRow.getSanctionDate()
+						+ " --> " + currentModifiedRow.getSanctionDate() + "<br>";
+			}
+			if (!previousModifiedRow.getActive().equals(currentModifiedRow.getActive())) {
+				modifications = modifications + "Active : " + previousModifiedRow.getActive() + " --> "
+						+ currentModifiedRow.getActive();
+			}			
+
+			if (modifications.length() > 0) {
+								
+				modificationsList.add(
+						"User : " + currentModifiedRow.getNameOfmodifyingUser() + "<br>" + "Modified On : "
+								+ currentModifiedRow.getLastModifiedDate() + "<br><br>" + modifications);
+			}
+
+		}
+
+		return modificationsList;
+	}
+
+	private List<WorkOrderAudit> getWorkOrderAuditList(final String workOrderId) {
+
+		final StringBuilder queryStr = new StringBuilder();
+		queryStr.append("select wo_aud.id, wo_aud.name, wo_aud.ordernumber, wo_aud.orderdate, cntr.name as contractorName, wo_aud.ordervalue, wo_aud.advancepayable, ")
+		.append("wo_aud.description, fnd.name fundName, wo_aud.department, schm.name scheme_name, sub_schm.name sub_scheme_name, wo_aud.sanctionnumber, wo_aud.sanctiondate, ")
+		.append("wo_aud.active, wo_aud.lastmodifiedby, wo_aud.lastmodifieddate, wo_aud.nameofmodifyinguser ")
+		.append("FROM egf_workorder_aud wo_aud LEFT JOIN egf_contractor cntr ON cntr.id=wo_aud.contractor LEFT JOIN fund fnd ON fnd.id=wo_aud.fund LEFT JOIN scheme schm ON schm.id=wo_aud.scheme ")
+		.append("LEFT JOIN sub_scheme sub_schm ON sub_schm.id=wo_aud.subscheme where wo_aud.id=:workOrderId order by wo_aud.lastmodifieddate NULLS FIRST");		
+		SQLQuery queryResult = persistenceService.getSession().createSQLQuery(queryStr.toString());
+		queryResult.setLong("workOrderId", Long.valueOf(workOrderId));
+		final List<Object[]> workOrderListFromQuery = queryResult.list();
+
+		List<WorkOrderAudit> workOrderAuditList = new ArrayList<WorkOrderAudit>();
+
+		for (Object[] obj : workOrderListFromQuery) {
+			WorkOrderAudit element = new WorkOrderAudit();
+			element.setId(String.valueOf(obj[0] != null ? obj[0] : AuditReportUtils.NO_VALUE));
+			element.setName(String.valueOf(obj[1] != null ? obj[1] : AuditReportUtils.NO_VALUE));
+			element.setOrderNumber(String.valueOf(obj[2] != null ? obj[2] : AuditReportUtils.NO_VALUE));
+			element.setOrderDate(String.valueOf(obj[3] != null ? obj[3] : AuditReportUtils.NO_VALUE));
+			element.setContractor(String.valueOf(obj[4] != null ? obj[4] : AuditReportUtils.NO_VALUE));
+			element.setOrderValue(String.valueOf(obj[5] != null ? obj[5] : AuditReportUtils.NO_VALUE));
+			element.setAdvancePayable(String.valueOf(obj[6] != null ? obj[6] : AuditReportUtils.NO_VALUE));
+			element.setDescription(String.valueOf(obj[7] != null ? obj[7] : AuditReportUtils.NO_VALUE));
+			element.setFund(String.valueOf(obj[8] != null ? obj[8] : AuditReportUtils.NO_VALUE));
+			element.setDepartment(String.valueOf(obj[9] != null ? obj[9] : AuditReportUtils.NO_VALUE));
+			element.setScheme(String.valueOf(obj[10] != null ? obj[10] : AuditReportUtils.NO_VALUE));
+			element.setSubScheme(String.valueOf(obj[11] != null ? obj[11] : AuditReportUtils.NO_VALUE));
+			element.setSanctionNumber(String.valueOf(obj[12] != null ? obj[12] : AuditReportUtils.NO_VALUE));
+			element.setSanctionDate(String.valueOf(obj[13] != null ? obj[13] : AuditReportUtils.NO_VALUE));
+			String isActive = (obj[14] != null && (Boolean)obj[14].equals(true)) ? "Active" : "Inactive";
+			element.setActive(String.valueOf(isActive));
+			element.setLastModifiedBy(String.valueOf(obj[15] != null ? obj[15] : AuditReportUtils.NO_VALUE));
+			String lastModifiedDate = String.valueOf(obj[16] != null ? obj[16] : "");			
+			element.setLastModifiedDate(AuditReportUtils.getFormattedDateTime(lastModifiedDate));			
+			element.setNameOfmodifyingUser(String.valueOf(obj[17] != null ? obj[17] : AuditReportUtils.NO_VALUE));
+			workOrderAuditList.add(element);
+			element = null;
+		}
+
+		return workOrderAuditList;
+	}
+	
 
 }
+
+
+
+
+

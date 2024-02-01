@@ -195,5 +195,9 @@
 		</div>
 
 	</s:form>
+	
+	<h1>Download Excel File</h1>
+    <p><a href="/services/EGF/budget/budget-template-result.action">Download Excel</a></p>
+	
 </body>
 </html>

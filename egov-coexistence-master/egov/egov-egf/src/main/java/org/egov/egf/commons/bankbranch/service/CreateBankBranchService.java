@@ -61,12 +61,18 @@ import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 
+import org.egov.commons.BankAudit;
 import org.egov.commons.Bankbranch;
+import org.egov.commons.BankbranchAudit;
 import org.egov.commons.contracts.BankBranchSearchRequest;
 import org.egov.egf.commons.bankbranch.repository.BankBranchRepository;
+import org.egov.egf.utils.AuditReportUtils;
 import org.egov.infra.config.core.ApplicationThreadLocals;
+import org.egov.infstr.services.PersistenceService;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -77,6 +83,10 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class CreateBankBranchService {
+	
+	@Autowired
+	@Qualifier("persistenceService")
+	private PersistenceService persistenceService;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -170,6 +180,134 @@ public class CreateBankBranchService {
 		final TypedQuery<Bankbranch> query = entityManager.createQuery(createQuery);
 		return query.getResultList();
 
+	}
+	
+	
+	public List<String> getBankBranchAuditReport(final String bankBranchId) {
+
+		List<BankbranchAudit> resultList = getBankBranchAuditList(bankBranchId);
+
+		List<String> modificationsList = new ArrayList<String>();
+
+		if (resultList.size() == 1)
+			return modificationsList;
+
+		for (int i = 0; i < resultList.size() - 1; i++) {
+
+			BankbranchAudit previousModifiedRow = resultList.get(i);
+			BankbranchAudit currentModifiedRow = resultList.get(i + 1);
+			String modifications = "";
+
+			if (!previousModifiedRow.getBranchname().equals(currentModifiedRow.getBranchname())) {
+				modifications = modifications + "Branch Name : " + previousModifiedRow.getBranchname() + " --> "
+						+ currentModifiedRow.getBranchname() + "<br>";
+			}
+			if (!previousModifiedRow.getBankName().equals(currentModifiedRow.getBankName())) {
+				modifications = modifications + "Bank Name : " + previousModifiedRow.getBankName() + " --> "
+						+ currentModifiedRow.getBankName() + "<br>";
+			}
+			if (!previousModifiedRow.getBranchcode().equals(currentModifiedRow.getBranchcode())) {
+				modifications = modifications + "Branch Code : " + previousModifiedRow.getBranchcode() + " --> "
+						+ currentModifiedRow.getBranchcode() + "<br>";
+			}			
+			if (!previousModifiedRow.getNarration().equals(currentModifiedRow.getNarration())) {
+				modifications = modifications + "Narration : " + previousModifiedRow.getNarration()
+						+ " --> " + currentModifiedRow.getNarration() + "<br>";
+			}
+			if (!previousModifiedRow.getBranchaddress1().equals(currentModifiedRow.getBranchaddress1())) {
+				modifications = modifications + "Address 1 : " + previousModifiedRow.getBranchaddress1() + " --> "
+						+ currentModifiedRow.getBranchaddress1() + "<br>";
+			}
+			if (!previousModifiedRow.getBranchaddress2().equals(currentModifiedRow.getBranchaddress2())) {
+				modifications = modifications + "Address 2 : " + previousModifiedRow.getBranchaddress2() + " --> "
+						+ currentModifiedRow.getBranchaddress2() + "<br>";
+			}
+			if (!previousModifiedRow.getBranchcity().equals(currentModifiedRow.getBranchcity())) {
+				modifications = modifications + "City : " + previousModifiedRow.getBranchcity() + " --> "
+						+ currentModifiedRow.getBranchcity() + "<br>";
+			}
+			if (!previousModifiedRow.getBranchstate().equals(currentModifiedRow.getBranchstate())) {
+				modifications = modifications + "State : " + previousModifiedRow.getBranchstate() + " --> "
+						+ currentModifiedRow.getBranchstate() + "<br>";
+			}
+			if (!previousModifiedRow.getBranchpin().equals(currentModifiedRow.getBranchpin())) {
+				modifications = modifications + "Pin : " + previousModifiedRow.getBranchpin() + " --> "
+						+ currentModifiedRow.getBranchpin() + "<br>";
+			}
+			if (!previousModifiedRow.getBranchphone().equals(currentModifiedRow.getBranchphone())) {
+				modifications = modifications + "Phone : " + previousModifiedRow.getBranchphone() + " --> "
+						+ currentModifiedRow.getBranchphone() + "<br>";
+			}
+			if (!previousModifiedRow.getBranchfax().equals(currentModifiedRow.getBranchfax())) {
+				modifications = modifications + "Fax : " + previousModifiedRow.getBranchfax() + " --> "
+						+ currentModifiedRow.getBranchfax() + "<br>";
+			}
+			if (!previousModifiedRow.getContactperson().equals(currentModifiedRow.getContactperson())) {
+				modifications = modifications + "Contact Person : " + previousModifiedRow.getContactperson() + " --> "
+						+ currentModifiedRow.getContactperson() + "<br>";
+			}
+			if (!previousModifiedRow.getBranchMICR().equals(currentModifiedRow.getBranchMICR())) {
+				modifications = modifications + "MICR : " + previousModifiedRow.getBranchMICR() + " --> "
+						+ currentModifiedRow.getBranchMICR() + "<br>";
+			}			
+			if (!previousModifiedRow.getIsactive().equals(currentModifiedRow.getIsactive())) {
+				modifications = modifications + "Active : " + previousModifiedRow.getIsactive() + " --> "
+						+ currentModifiedRow.getIsactive();
+			}		
+
+			if (modifications.length() > 0) {
+								
+				modificationsList.add(
+						"User : " + currentModifiedRow.getNameOfmodifyingUser() + "<br>" + "Modified On : "
+								+ currentModifiedRow.getLastModifiedDate() + "<br><br>" + modifications);
+			}
+
+		}
+
+		return modificationsList;
+	}
+
+	private List<BankbranchAudit> getBankBranchAuditList(final String bankBranchId) {
+
+		final StringBuilder queryStr = new StringBuilder();
+		queryStr.append(
+				"select bb_aud.id, bb_aud.branchcode, bb_aud.branchname, bb_aud.branchaddress1, bb_aud.branchaddress2, bb_aud.branchcity, bb_aud.branchstate, ")
+				.append("bb_aud.branchpin, bb_aud.branchphone, bb_aud.branchfax, bb_aud.contactperson, bb_aud.isactive, bb_aud.narration, bb_aud.micr, ")
+				.append("bb_aud.lastmodifieddate, bb_aud.lastmodifiedby, bb_aud.nameofmodifyinguser, bank.name ")
+				.append("from bankbranch_aud bb_aud LEFT JOIN bank bank ON bb_aud.bankid = bank.id where bb_aud.id=:bankBranchId order by bb_aud.lastmodifieddate NULLS FIRST");
+		SQLQuery queryResult = persistenceService.getSession().createSQLQuery(queryStr.toString());
+		queryResult.setLong("bankBranchId", Long.valueOf(bankBranchId));
+		final List<Object[]> bankBranchAuditListFromQuery = queryResult.list();
+
+		List<BankbranchAudit> bankBranchAuditList = new ArrayList<BankbranchAudit>();
+
+		for (Object[] obj : bankBranchAuditListFromQuery) {
+			BankbranchAudit element = new BankbranchAudit();
+			element.setId(String.valueOf(obj[0] != null ? obj[0] : AuditReportUtils.NO_VALUE));
+			element.setBranchcode(String.valueOf(obj[1] != null ? obj[1] : AuditReportUtils.NO_VALUE));
+			element.setBranchname(String.valueOf(obj[2] != null ? obj[2] : AuditReportUtils.NO_VALUE));
+			element.setBranchaddress1(String.valueOf(obj[3] != null ? obj[3] : AuditReportUtils.NO_VALUE));
+			element.setBranchaddress2(String.valueOf(obj[4] != null ? obj[4] : AuditReportUtils.NO_VALUE));
+			element.setBranchcity(String.valueOf(obj[5] != null ? obj[5] : AuditReportUtils.NO_VALUE));
+			element.setBranchstate(String.valueOf(obj[6] != null ? obj[6] : AuditReportUtils.NO_VALUE));
+			element.setBranchpin(String.valueOf(obj[7] != null ? obj[7] : AuditReportUtils.NO_VALUE));
+			element.setBranchphone(String.valueOf(obj[8] != null ? obj[8] : AuditReportUtils.NO_VALUE));
+			element.setBranchfax(String.valueOf(obj[9] != null ? obj[9] : AuditReportUtils.NO_VALUE));
+			element.setContactperson(String.valueOf(obj[10] != null ? obj[10] : AuditReportUtils.NO_VALUE));
+			String isActive = (obj[11] != null && (Boolean)obj[11].equals(true)) ? "Active" : "Inactive"; 
+			element.setIsactive(isActive);
+			element.setNarration(String.valueOf(obj[12] != null ? obj[12] : AuditReportUtils.NO_VALUE));			
+			element.setBranchMICR(String.valueOf(obj[13] != null ? obj[13] : AuditReportUtils.NO_VALUE));
+			String lastModifiedDate = String.valueOf(obj[14] != null ? obj[14] : "");			
+			element.setLastModifiedDate(AuditReportUtils.getFormattedDateTime(lastModifiedDate));
+			element.setLastModifiedBy(String.valueOf(obj[15] != null ? obj[15] : AuditReportUtils.NO_VALUE));
+			element.setNameOfmodifyingUser(String.valueOf(obj[16] != null ? obj[16] : AuditReportUtils.NO_VALUE));
+			element.setBankName(String.valueOf(obj[17] != null ? obj[17] : AuditReportUtils.NO_VALUE));
+			bankBranchAuditList.add(element);
+			element = null;
+		}
+
+		return bankBranchAuditList;
 	}
 
 }

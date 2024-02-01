@@ -64,6 +64,7 @@ import org.egov.egf.commons.bankaccount.service.CreateBankAccountService;
 import org.egov.egf.commons.bankbranch.service.CreateBankBranchService;
 import org.egov.egf.utils.FinancialUtils;
 import org.egov.egf.web.controller.bankaccount.adaptor.BankAccountJsonAdaptor;
+import org.egov.infra.microservice.utils.MicroserviceUtils;
 import org.egov.model.masters.AccountCodePurpose;
 import org.egov.services.voucher.GeneralLedgerService;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -79,6 +80,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -99,6 +101,9 @@ public class BankAccountController {
 	private static final String BANKACCOUNT = "bankaccount";
     
     private static final String BANKACCOUNT_SEARCH_REQUEST = "bankaccountSearchRequest";
+    
+    @Autowired
+	private MicroserviceUtils microserviceUtils;
 
     @Autowired
     private CreateBankAccountService createBankAccountService;
@@ -186,6 +191,7 @@ public class BankAccountController {
             model.addAttribute(BANKACCOUNT, bankaccount);
             return "bankaccount-new";
         }
+        bankaccount.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
         createBankAccountService.create(bankaccount);
         createBankAccountService.clearCache();
         redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.bankaccount.success", null, null));
@@ -201,6 +207,7 @@ public class BankAccountController {
             model.addAttribute(BANKACCOUNT, bankaccount);
             return "bankaccount-update";
         }
+        bankaccount.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
         createBankAccountService.update(bankaccount);
         redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.bankaccount.success", null, null));
         return "redirect:/bankaccount/success/" + bankaccount.getId()+"/view";
@@ -255,5 +262,35 @@ public class BankAccountController {
         }
 
     }
+    
+    
+    @GetMapping(value = "/bank-account-audit")
+	public @ResponseBody List<String> getBankAccountAudit(@RequestParam("bankAccountId") @SafeHtml final String bankAccountId) {
+		
+		return createBankAccountService.getBankAccountAuditReport(bankAccountId);
+	}
+    
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

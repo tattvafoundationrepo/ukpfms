@@ -73,6 +73,11 @@ import org.egov.commons.utils.CommonsConstants;
 import org.egov.infra.persistence.entity.AbstractAuditable;
 import org.egov.infra.persistence.validator.annotation.OptionalPattern;
 import org.egov.infra.persistence.validator.annotation.Unique;
+import org.hibernate.envers.AuditOverride;
+import org.hibernate.envers.AuditOverrides;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
+import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -80,6 +85,11 @@ import org.hibernate.validator.constraints.SafeHtml;
 @Table(name = "BANKACCOUNT")
 @SequenceGenerator(name = SEQ_BANKACCOUNT, sequenceName = SEQ_BANKACCOUNT, allocationSize = 1)
 @Unique(fields = { "accountnumber" }, enableDfltMsg = true)
+@Audited
+@AuditOverrides({
+    @AuditOverride(forClass = AbstractAuditable.class, name = "lastModifiedBy"),
+    @AuditOverride(forClass = AbstractAuditable.class, name = "lastModifiedDate")
+})
 public class Bankaccount extends AbstractAuditable implements java.io.Serializable {
 
     public static final String SEQ_BANKACCOUNT = "SEQ_BANKACCOUNT";
@@ -93,15 +103,18 @@ public class Bankaccount extends AbstractAuditable implements java.io.Serializab
     @ManyToOne
     @NotNull
     @JoinColumn(name = "branchid", nullable = true)
+    @Audited(targetAuditMode = RelationTargetAuditMode.AUDITED)
     private Bankbranch bankbranch;
 
     @ManyToOne
     @JoinColumn(name = "glcodeid")
+    @Audited(targetAuditMode = RelationTargetAuditMode.AUDITED)
     private CChartOfAccounts chartofaccounts;
 
     @ManyToOne
     @JoinColumn(name = "fundid")
     @NotNull
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Fund fund;
 
     @NotNull
@@ -126,14 +139,28 @@ public class Bankaccount extends AbstractAuditable implements java.io.Serializab
     @NotNull
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private BankAccountType type;
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "bankaccount")
+    @NotAudited
     private Set<EgSurrenderedCheques> egSurrenderedChequeses = new HashSet<>(0);
 
     @ManyToOne
     @JoinColumn(name = "chequeformatid")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private ChequeFormat chequeformat;
+    
+    @Column(name = "nameofmodifyinguser")
+    private String nameOfmodifyingUser;        
+
+	public String getNameOfmodifyingUser() {
+		return nameOfmodifyingUser;
+	}
+
+	public void setNameOfmodifyingUser(String nameOfmodifyingUser) {
+		this.nameOfmodifyingUser = nameOfmodifyingUser;
+	}
 
     @Override
     public Long getId() {

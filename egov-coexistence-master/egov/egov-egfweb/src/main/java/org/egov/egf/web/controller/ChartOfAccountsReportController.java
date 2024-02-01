@@ -1,5 +1,6 @@
 package org.egov.egf.web.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,6 +11,7 @@ import org.egov.commons.service.AccountPurposeService;
 import org.egov.commons.service.AccountdetailtypeService;
 import org.egov.commons.service.ChartOfAccountsService;
 import org.egov.egf.web.adaptor.ChartOfAccountReportJsonAdaptor;
+import org.egov.model.report.ChartOfAccountsAuditReport;
 import org.egov.model.report.ChartOfAccountsReport;
 import org.egov.services.report.ChartOfAccountsReportService;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -35,7 +37,7 @@ import com.google.gson.GsonBuilder;
 public class ChartOfAccountsReportController {
 
 	private static final String COA_REPORT = "coareport";
-
+	
 	@Autowired
 	private ChartOfAccountsReportService chartOfAccountsReportService;
 
@@ -88,6 +90,12 @@ public class ChartOfAccountsReportController {
 	@GetMapping(value = "/ajax/getMinorCode")
 	public @ResponseBody List<CChartOfAccounts> getMinorAccounts(@RequestParam("parentId") Long parentId) {
 		return chartOfAccountsReportService.getMinCodeListByMajorCodeId(parentId);
+	}
+
+	@GetMapping(value = "/ajax/chartOfAccounts-audit")
+	public @ResponseBody List<String> getCoaAuditData(@RequestParam("glcode") @SafeHtml final String glcode) {
+		List<String> al = chartOfAccountsReportService.getCoaModificationReport(glcode);
+		return al;
 	}
 
 	public Object toSearchResultJson(final Object object) {

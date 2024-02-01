@@ -130,7 +130,7 @@ public abstract class ReportService {
 				.createSQLQuery("select majorcode from chartofaccounts where purposeid=:purposeId");
 		final List list = query.setParameter("purposeId", purposeId).list();
 		String glCode = "";
-		if (list.get(0) != null)
+		if (list.size() > 0 &&  list.get(0) != null)
 			glCode = list.get(0).toString();
 		return glCode;
 	}

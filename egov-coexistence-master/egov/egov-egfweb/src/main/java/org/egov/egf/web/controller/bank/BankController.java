@@ -56,6 +56,7 @@ import org.egov.commons.Bank;
 import org.egov.commons.contracts.BankSearchRequest;
 import org.egov.egf.commons.bank.service.CreateBankService;
 import org.egov.egf.web.controller.bank.adaptor.BankJsonAdaptor;
+import org.egov.infra.microservice.utils.MicroserviceUtils;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
@@ -68,6 +69,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -85,6 +87,9 @@ public class BankController {
 
 	private static final String BANK = "bank";
 	private static final String BANK_SEARCH_REQUEST = "bankSearchRequest";
+	
+	@Autowired
+	private MicroserviceUtils microserviceUtils;
 
 	@Autowired
 	private CreateBankService createBankService;
@@ -135,6 +140,7 @@ public class BankController {
 			final RedirectAttributes redirectAttrs) {
 		if (errors.hasErrors())
 			return "bank-new";
+		bank.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		createBankService.create(bank);
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.bank.success", null, null));
 		return "redirect:/bank/success/" + bank.getId() + "/create";
@@ -145,9 +151,16 @@ public class BankController {
 			final RedirectAttributes redirectAttrs) {
 		if (errors.hasErrors())
 			return "bank-update";
+		bank.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		createBankService.update(bank);
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.bank.success", null, null));
 		return "redirect:/bank/success/" + bank.getId() + "/view";
+	}
+	
+	@GetMapping(value = "/bank-audit")
+	public @ResponseBody List<String> getBankAudit(@RequestParam("bankId") @SafeHtml final String bankId) {
+		
+		return createBankService.getBankAuditReport(bankId);
 	}
 
 	@PostMapping(value = "/ajaxsearch/{mode}", produces = MediaType.TEXT_PLAIN_VALUE)

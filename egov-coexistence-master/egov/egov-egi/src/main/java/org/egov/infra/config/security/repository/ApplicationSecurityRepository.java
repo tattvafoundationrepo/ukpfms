@@ -64,23 +64,17 @@ public class ApplicationSecurityRepository implements SecurityContextRepository 
 			HttpSession session = request.getSession();
 			LOGGER.info(" *** URI " + request.getRequestURL().toString());
 			curUser = (CurrentUser) this.microserviceUtils.readFromRedis(request.getSession().getId(), "current_user");
-			// System.out.println("----------------------------------- curUser outside :
-			// "+curUser+"-------------------------------");
+			
 			if (curUser == null) {
 				LOGGER.info(" ***  Session is not available in redis.... , trying to login");
 				curUser = new CurrentUser(this.getUserDetails(request));
-				// System.out.println("----------------------------------- curUser inside :
-				// "+curUser+"-------------------------------");
-				// System.out.println("----------------------------------- session.getId()
-				// inside : "+session.getId()+"-------------------------------");
+				
 				this.microserviceUtils.savetoRedis(session.getId(), "current_user", curUser);
 			}
 			String oldToken = (String) session.getAttribute(MS_USER_TOKEN);
-			// System.out.println("----------------------------------- oldToken :
-			// "+oldToken+"-------------------------------");
+			
 			String newToken = (String) this.microserviceUtils.readFromRedis(session.getId(), AUTH_TOKEN);
-			// System.out.println("----------------------------------- newToken :
-			// "+newToken+"-------------------------------");
+			
 			if (null != oldToken && null != newToken && !oldToken.equals(newToken)) {
 				session.setAttribute(MS_USER_TOKEN, newToken);
 			}
@@ -123,34 +117,7 @@ public class ApplicationSecurityRepository implements SecurityContextRepository 
 		String tenantid = null;
 		userToken = request.getParameter(AUTH_TOKEN);
 		tenantid = request.getParameter("tenantId");
-		HttpSession session = request.getSession();
-
-		/*
-		 * if (request.getParameter(AUTH_TOKEN) != null)
-		 * session.setAttribute(AUTH_TOKEN, userToken); else userToken = (String)
-		 * session.getAttribute(AUTH_TOKEN);
-		 * 
-		 * if (request.getParameter("tenantId") != null)
-		 * session.setAttribute("tenantId", tenantid); else tenantid = (String)
-		 * session.getAttribute("tenantId");
-		 * 
-		 * System.out.println(
-		 * "**********************************************************************************************************"
-		 * );
-		 * System.out.println("*************************************** userToken : "+((
-		 * String)
-		 * session.getAttribute(AUTH_TOKEN))+"*****************************************"
-		 * );
-		 * System.out.println("*************************************** tenantId : "+((
-		 * String)
-		 * session.getAttribute("tenantId"))+"*****************************************"
-		 * ); System.out.println(
-		 * "**********************************************************************************************************"
-		 * );
-		 * 
-		 */
-
-		
+		HttpSession session = request.getSession();		
 		
 		if (userToken != null && LOGGED_IN_USER_AUTH_TOKEN == null) {
 			LOGGED_IN_USER_AUTH_TOKEN = userToken;

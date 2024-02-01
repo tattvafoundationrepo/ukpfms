@@ -204,20 +204,56 @@ public class ServiceTypeToBankAccountMappingAction extends BaseFormAction {
         populateListsForView();
         return INDEX;
     }
-
+    
+    /*
+     * Default method
+     * Bank account mapping from MDMS 'data/pg/citya/FinanceService/BankAccountServiceMapping.json' file
+     * */
+    
+//    @Action(value = "/service/serviceTypeToBankAccountMapping-search")
+//    public String search() {
+//        populateListsForView();
+//        
+//        StringBuilder businessDetails = new StringBuilder();
+//        
+//        if(! serviceCategory.equalsIgnoreCase("-1"))
+//        	businessDetails.append(serviceCategory);
+//        
+//        if (bankAccountServiceMap.getServiceDetails() != null && !bankAccountServiceMap.getServiceDetails().getCode().isEmpty()
+//                && !bankAccountServiceMap.getServiceDetails().getCode().equalsIgnoreCase("-1")) {
+//            businessDetails.append(".").append(bankAccountServiceMap.getServiceDetails().getCode());
+//        }
+//        
+//        mappings = microserviceUtils
+//                .getBankAcntServiceMappingsByBankAcc(bankAccountServiceMap.getBankAccountId().getAccountnumber(),
+//                        businessDetails.toString());
+//        populateNames(mappings);
+//        target = "searchresult";
+//        return INDEX;
+//    }
+    
+    
+    /*
+     * Custom method
+     * Bank account mapping from database table of tattvadb via collection-service
+     * */
+    
     @Action(value = "/service/serviceTypeToBankAccountMapping-search")
     public String search() {
         populateListsForView();
         
         StringBuilder businessDetails = new StringBuilder();
-        businessDetails.append(serviceCategory);
+        
+        if(! serviceCategory.equalsIgnoreCase("-1"))
+        	businessDetails.append(serviceCategory);
+        
         if (bankAccountServiceMap.getServiceDetails() != null && !bankAccountServiceMap.getServiceDetails().getCode().isEmpty()
                 && !bankAccountServiceMap.getServiceDetails().getCode().equalsIgnoreCase("-1")) {
             businessDetails.append(".").append(bankAccountServiceMap.getServiceDetails().getCode());
         }
         
         mappings = microserviceUtils
-                .getBankAcntServiceMappingsByBankAcc(bankAccountServiceMap.getBankAccountId().getAccountnumber(),
+                .getBankAcntServiceMappingsByBankAccFromDatabase(bankAccountServiceMap.getBankAccountId().getAccountnumber(),
                         businessDetails.toString());
         populateNames(mappings);
         target = "searchresult";

@@ -140,8 +140,19 @@ public class CChartOfAccounts extends AbstractAuditable {
     @JsonIgnore
     @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "glCodeId", targetEntity = CChartOfAccountDetail.class)
     private Set<CChartOfAccountDetail> chartOfAccountDetails = new HashSet<>();
+    
+    @Column(name = "nameofmodifyinguser")
+    private String nameOfmodifyingUser;        
 
-    public Set<CChartOfAccountDetail> getChartOfAccountDetails() {
+	public String getNameOfmodifyingUser() {
+		return nameOfmodifyingUser;
+	}
+
+	public void setNameOfmodifyingUser(String nameOfmodifyingUser) {
+		this.nameOfmodifyingUser = nameOfmodifyingUser;
+	}
+
+	public Set<CChartOfAccountDetail> getChartOfAccountDetails() {
         return chartOfAccountDetails;
     }
 

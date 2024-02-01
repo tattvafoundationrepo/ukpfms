@@ -61,6 +61,7 @@ import javax.persistence.criteria.Root;
 import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 
+import org.egov.commons.BankaccountAudit;
 import org.egov.commons.Bankaccount;
 import org.egov.commons.Bankbranch;
 import org.egov.commons.CChartOfAccounts;
@@ -68,11 +69,14 @@ import org.egov.commons.contracts.BankAccountSearchRequest;
 import org.egov.commons.service.ChartOfAccountsService;
 import org.egov.egf.commons.bankaccount.repository.BankAccountRepository;
 import org.egov.egf.commons.bankbranch.service.CreateBankBranchService;
+import org.egov.egf.utils.AuditReportUtils;
 import org.egov.infra.admin.master.entity.AppConfigValues;
 import org.egov.infra.admin.master.service.AppConfigValueService;
 import org.egov.infra.config.core.ApplicationThreadLocals;
+import org.egov.infstr.services.PersistenceService;
 import org.egov.infstr.utils.EGovConfig;
 import org.egov.utils.FinancialConstants;
+import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -91,6 +95,10 @@ import com.exilant.GLEngine.CoaCache;
 public class CreateBankAccountService {
 
 	private final String code = EGovConfig.getProperty("egf_config.xml", "glcodeMaxLength", "", "AccountCode");
+	
+	@Autowired
+	@Qualifier("persistenceService")
+	private PersistenceService persistenceService;
 
 	@PersistenceContext
 	private EntityManager entityManager;
@@ -266,4 +274,151 @@ public class CreateBankAccountService {
 	public void clearCache() {
 		coaCache.reLoad();
 	}
+	
+	public List<String> getBankAccountAuditReport(final String bankAccountId) {
+
+		List<BankaccountAudit> resultList = getBankAccountAuditList(bankAccountId);
+
+		List<String> modificationsList = new ArrayList<String>();
+
+		if (resultList.size() == 1)
+			return modificationsList;
+
+		for (int i = 0; i < resultList.size() - 1; i++) {
+
+			BankaccountAudit previousModifiedRow = resultList.get(i);
+			BankaccountAudit currentModifiedRow = resultList.get(i + 1);
+			String modifications = "";
+
+			if (!previousModifiedRow.getBankbranch().equals(currentModifiedRow.getBankbranch())) {
+				modifications = modifications + "Bank Branch : " + previousModifiedRow.getBankbranch() + " --> "
+						+ currentModifiedRow.getBankbranch() + "<br>";
+			}
+			if (!previousModifiedRow.getBank().equals(currentModifiedRow.getBank())) {
+				modifications = modifications + "Bank : " + previousModifiedRow.getBank() + " --> "
+						+ currentModifiedRow.getBank() + "<br>";
+			}
+			if (!previousModifiedRow.getAccountnumber().equals(currentModifiedRow.getAccountnumber())) {
+				modifications = modifications + "Account # : " + previousModifiedRow.getAccountnumber() + " --> "
+						+ currentModifiedRow.getAccountnumber() + "<br>";
+			}
+			if (!previousModifiedRow.getAccounttype().equals(currentModifiedRow.getAccounttype())) {
+				modifications = modifications + "Account Type : " + previousModifiedRow.getAccounttype() + " --> "
+						+ currentModifiedRow.getAccounttype() + "<br>";
+			}
+			if (!previousModifiedRow.getFund().equals(currentModifiedRow.getFund())) {
+				modifications = modifications + "Fund : " + previousModifiedRow.getFund() + " --> "
+						+ currentModifiedRow.getFund() + "<br>";
+			}
+			if (!previousModifiedRow.getPayTo().equals(currentModifiedRow.getPayTo())) {
+				modifications = modifications + "Pay To : " + previousModifiedRow.getPayTo() + " --> "
+						+ currentModifiedRow.getPayTo() + "<br>";
+			}
+			if (!previousModifiedRow.getType().equals(currentModifiedRow.getType())) {
+				modifications = modifications + "Usage Type : " + previousModifiedRow.getType() + " --> "
+						+ currentModifiedRow.getType() + "<br>";
+			}
+			if (!previousModifiedRow.getChequeformat().equals(currentModifiedRow.getChequeformat())) {
+				modifications = modifications + "Cheque Format : " + previousModifiedRow.getChequeformat() + " --> "
+						+ currentModifiedRow.getChequeformat() + "<br>";
+			}
+			if (!previousModifiedRow.getNarration().equals(currentModifiedRow.getNarration())) {
+				modifications = modifications + "Narration : " + previousModifiedRow.getNarration()
+						+ " --> " + currentModifiedRow.getNarration() + "<br>";
+			}
+			if (!previousModifiedRow.getIsactive().equals(currentModifiedRow.getIsactive())) {
+				modifications = modifications + "Active : " + previousModifiedRow.getIsactive() + " --> "
+						+ currentModifiedRow.getIsactive();
+			}			
+
+			if (modifications.length() > 0) {
+								
+				modificationsList.add(
+						"User : " + currentModifiedRow.getNameOfmodifyingUser() + "<br>" + "Modified On : "
+								+ currentModifiedRow.getLastModifiedDate() + "<br><br>" + modifications);
+			}
+
+		}
+
+		return modificationsList;
+	}
+
+	private List<BankaccountAudit> getBankAccountAuditList(final String bankAccountId) {
+
+		final StringBuilder queryStr = new StringBuilder();
+		queryStr.append("select bacc_aud.id, bb.branchname, bnk.name bank_name, bacc_aud.accountnumber, bacc_aud.accounttype, ")
+				.append("bacc_aud.narration, bacc_aud.isactive, bacc_aud.glcodeid, fnd.name, bacc_aud.payto, bacc_aud.type, ")
+				.append("bacc_aud.lastmodifiedby, bacc_aud.lastmodifieddate, bacc_aud.chequeformatid, bacc_aud.nameofmodifyinguser ")
+				.append("FROM bankaccount_aud bacc_aud ")
+				.append("LEFT JOIN bankbranch bb ON bacc_aud.branchid=bb.id LEFT JOIN bank bnk ON bnk.id=bb.bankid LEFT JOIN fund fnd ON bacc_aud.fundid=fnd.id ")
+				.append("where bacc_aud.id=:bankAccountId order by bacc_aud.lastmodifieddate NULLS FIRST");
+		SQLQuery queryResult = persistenceService.getSession().createSQLQuery(queryStr.toString());
+		queryResult.setLong("bankAccountId", Long.valueOf(bankAccountId));
+		final List<Object[]> bankAuditListFromQuery = queryResult.list();
+
+		List<BankaccountAudit> bankAuditList = new ArrayList<BankaccountAudit>();
+
+		for (Object[] obj : bankAuditListFromQuery) {
+			BankaccountAudit element = new BankaccountAudit();
+			element.setId(String.valueOf(obj[0] != null ? obj[0] : AuditReportUtils.NO_VALUE));
+			element.setBankbranch(String.valueOf(obj[1] != null ? obj[1] : AuditReportUtils.NO_VALUE));
+			element.setBank(String.valueOf(obj[2] != null ? obj[2] : AuditReportUtils.NO_VALUE));
+			element.setAccountnumber(String.valueOf(obj[3] != null ? obj[3] : AuditReportUtils.NO_VALUE));
+			element.setAccounttype(String.valueOf(obj[4] != null ? obj[4] : AuditReportUtils.NO_VALUE));			
+			element.setNarration(String.valueOf(obj[5] != null ? obj[5] : AuditReportUtils.NO_VALUE));
+			String isActive = (obj[6] != null && (Boolean)obj[6].equals(true)) ? "Active" : "Inactive"; 
+			element.setIsactive(String.valueOf(isActive));
+			element.setChartofaccounts(String.valueOf(obj[7] != null ? obj[7] : AuditReportUtils.NO_VALUE));
+			element.setFund(String.valueOf(obj[8] != null ? obj[8] : AuditReportUtils.NO_VALUE));
+			element.setPayTo(String.valueOf(obj[9] != null ? obj[9] : AuditReportUtils.NO_VALUE));
+			element.setType(String.valueOf(obj[10] != null ? obj[10] : AuditReportUtils.NO_VALUE));
+			element.setLastModifiedBy(String.valueOf(obj[11] != null ? obj[11] : AuditReportUtils.NO_VALUE));
+			String lastModifiedDate = String.valueOf(obj[12] != null ? obj[12] : "");			
+			element.setLastModifiedDate(AuditReportUtils.getFormattedDateTime(lastModifiedDate));			
+			element.setChequeformat(String.valueOf(obj[13] != null ? obj[13] : AuditReportUtils.NO_VALUE));
+			element.setNameOfmodifyingUser(String.valueOf(obj[8] != null ? obj[8] : AuditReportUtils.NO_VALUE));
+			bankAuditList.add(element);
+			element = null;
+		}
+
+		return bankAuditList;
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

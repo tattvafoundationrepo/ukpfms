@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -63,8 +64,10 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import org.codehaus.jackson.annotate.JsonIgnore;
-import org.egov.infra.persistence.entity.AbstractPersistable;
+import org.egov.infra.persistence.entity.AbstractAuditableForIntegerId;
 import org.egov.infra.persistence.validator.annotation.Unique;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.NotAudited;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
 
@@ -72,7 +75,12 @@ import org.hibernate.validator.constraints.SafeHtml;
 @Table(name = "BANK")
 @SequenceGenerator(name = Bank.SEQ_BANK, sequenceName = Bank.SEQ_BANK, allocationSize = 1)
 @Unique(fields = { "code", "name" }, enableDfltMsg = true)
-public class Bank extends AbstractPersistable<Integer> {
+@Audited
+//@AuditOverrides({
+//    @AuditOverride(forClass = AbstractAuditable.class, name = "lastModifiedBy"),
+//    @AuditOverride(forClass = AbstractAuditable.class, name = "lastModifiedDate")
+//})
+public class Bank extends AbstractAuditableForIntegerId {
 
 	private static final long serialVersionUID = -2839424467289504649L;
 
@@ -104,11 +112,12 @@ public class Bank extends AbstractPersistable<Integer> {
 
 	@JsonIgnore
 	@Length(max = 50)
-	@SafeHtml
+	@SafeHtml	
 	private String type;
 
 	@JsonIgnore
 	@OneToMany(orphanRemoval = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "bank", targetEntity = Bankbranch.class)
+	@NotAudited
 	private Set<Bankbranch> bankbranchs = new HashSet<>(0);
 
 	@JsonIgnore
@@ -122,6 +131,17 @@ public class Bank extends AbstractPersistable<Integer> {
 
 	@JsonIgnore
 	private Date lastModifiedDate;
+	
+	@Column(name = "nameofmodifyinguser")
+    private String nameOfmodifyingUser;        
+
+	public String getNameOfmodifyingUser() {
+		return nameOfmodifyingUser;
+	}
+
+	public void setNameOfmodifyingUser(String nameOfmodifyingUser) {
+		this.nameOfmodifyingUser = nameOfmodifyingUser;
+	}
 
 	@Override
 	public Integer getId() {

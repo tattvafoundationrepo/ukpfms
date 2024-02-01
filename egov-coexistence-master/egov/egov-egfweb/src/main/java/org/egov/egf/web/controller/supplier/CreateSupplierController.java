@@ -48,6 +48,8 @@
 package org.egov.egf.web.controller.supplier;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -56,6 +58,7 @@ import org.egov.commons.dao.EgwStatusHibernateDAO;
 import org.egov.egf.commons.bank.service.CreateBankService;
 import org.egov.egf.masters.services.SupplierService;
 import org.egov.egf.web.adaptor.SupplierJsonAdaptor;
+import org.egov.infra.microservice.utils.MicroserviceUtils;
 import org.egov.model.masters.Supplier;
 import org.egov.model.masters.SupplierSearchRequest;
 import org.egov.utils.FinancialConstants;
@@ -71,6 +74,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -105,6 +109,9 @@ public class CreateSupplierController {
 	@Autowired
 	private MessageSource messageSource;
 
+	@Autowired
+	private MicroserviceUtils microserviceUtils;
+
 	private void prepareNewForm(final Model model) {
 		model.addAttribute("banks", createBankService.getByIsActiveTrueOrderByName());
 		model.addAttribute("statuses",
@@ -126,7 +133,7 @@ public class CreateSupplierController {
 			prepareNewForm(model);
 			return NEW;
 		}
-
+		supplier.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		supplierService.create(supplier);
 
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.supplier.success", null, null));
@@ -149,9 +156,18 @@ public class CreateSupplierController {
 			prepareNewForm(model);
 			return EDIT;
 		}
+		supplier.setLastModifiedDate(new Date());
+		supplier.setNameOfmodifyingUser(microserviceUtils.getUserInfo().getName()+" ( "+microserviceUtils.getUserInfo().getId()+" ) ");
 		supplierService.update(supplier);
 		redirectAttrs.addFlashAttribute("message", messageSource.getMessage("msg.supplier.success", null, null));
 		return "redirect:/supplier/result/" + supplier.getId() + "/view";
+	}
+
+	@GetMapping(value = "/supplier-audit")
+	public @ResponseBody List<String> getSupplierAudit(@RequestParam("supplierId") @SafeHtml final String supplierId) {
+
+		return supplierService.getSupplierAuditReport(supplierId);
+
 	}
 
 	@GetMapping(value = "/view/{id}")
