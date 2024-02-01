@@ -5,9 +5,9 @@ org/egov/eis/entity/EmployeeBuilder.class
 org/egov/eis/service/EmployeeServiceTest.class
 org/egov/eis/service/AssignmentServiceTest.class
 org/egov/eis/service/PositionMasterServiceTest.class
-org/egov/eis/service/DeptDesigServiceTest.class
 org/egov/eis/entity/PositionBuilder.class
+org/egov/eis/service/DeptDesigServiceTest.class
 org/egov/eis/service/EmployeeViewServiceTest.class
 org/egov/eis/service/DesignationServiceTest.class
-org/egov/eis/service/EisCommonServiceTest.class
 org/egov/eis/entity/DeptDesigBuilder.class
+org/egov/eis/service/EisCommonServiceTest.class

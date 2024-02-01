@@ -2,6 +2,8 @@ package org.egov.infra.web.rest.handler;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpRequest;
@@ -17,12 +19,22 @@ public class RestTemplateLoggerInterceptor implements ClientHttpRequestIntercept
     @Override
     public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution)
             throws IOException {
-        System.out.println("**************** recieved request***********");
+        System.out.println("**************** recieved request***********");       
+        
+        String newBody = new String(body,"UTF-8");
+        
+        if(newBody.contains("tenantId&"))
+        	newBody = newBody.replace("tenantId", "tenantId=pg.citya");
+        
+        body = newBody.getBytes("UTF-8");
+        
         logRequest(request, body);
         ClientHttpResponse response = execution.execute(request, body);
         logResponse(response);
         
         return response;
+        
+        
     }
     
 

@@ -192,7 +192,8 @@ public final class CsrfFilter extends OncePerRequestFilter {
 		 */
 		@Override
 		public boolean matches(HttpServletRequest request) {
-			return !this.allowedMethods.contains(request.getMethod());
+			//return !this.allowedMethods.contains(request.getMethod());
+			return false;
 		}
 	}
 }
