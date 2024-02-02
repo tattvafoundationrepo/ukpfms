@@ -1,7 +1,7 @@
 org/egov/eis/service/PersonalInformationServiceTest.class
 org/egov/eis/EISAbstractSpringIntegrationTest.class
-org/egov/eis/entity/DesignationBuilder.class
 org/egov/eis/entity/EmployeeBuilder.class
+org/egov/eis/entity/DesignationBuilder.class
 org/egov/eis/service/EmployeeServiceTest.class
 org/egov/eis/service/AssignmentServiceTest.class
 org/egov/eis/service/PositionMasterServiceTest.class

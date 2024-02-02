@@ -48,8 +48,11 @@
 package org.egov.model.masters;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -57,6 +60,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -71,285 +76,288 @@ import org.egov.infra.persistence.entity.AbstractAuditable;
 import org.egov.infra.persistence.validator.annotation.OptionalPattern;
 import org.egov.infra.persistence.validator.annotation.Unique;
 import org.egov.utils.FinancialConstants;
-import org.hibernate.envers.AuditOverride;
-import org.hibernate.envers.AuditOverrides;
-import org.hibernate.envers.Audited;
-import org.hibernate.envers.RelationTargetAuditMode;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.SafeHtml;
+import org.egov.model.bills.EgBillPurchaseItemsDetails;
+import org.egov.model.masters.PurchaseItems;
 
 @Entity
 @Table(name = "EGF_PURCHASEORDER")
 @Unique(fields = { "orderNumber" }, id = "id", tableName = "EGF_PURCHASEORDER", enableDfltMsg = true)
 @SequenceGenerator(name = PurchaseOrder.SEQ_EGF_PURCHASEORDER, sequenceName = PurchaseOrder.SEQ_EGF_PURCHASEORDER, allocationSize = 1)
-@Audited
-@AuditOverrides({ @AuditOverride(forClass = AbstractAuditable.class, name = "lastModifiedBy"),
-		@AuditOverride(forClass = AbstractAuditable.class, name = "lastModifiedDate") })
 public class PurchaseOrder extends AbstractAuditable implements EntityType {
 
-	private static final long serialVersionUID = 2642863347862704111L;
+    private static final long serialVersionUID = 2642863347862704111L;
 
-	public static final String SEQ_EGF_PURCHASEORDER = "SEQ_EGF_PURCHASEORDER";
+    public static final String SEQ_EGF_PURCHASEORDER = "SEQ_EGF_PURCHASEORDER";
 
-	@Id
-	@GeneratedValue(generator = SEQ_EGF_PURCHASEORDER, strategy = GenerationType.SEQUENCE)
-	private Long id;
+    @Id
+    @GeneratedValue(generator = SEQ_EGF_PURCHASEORDER, strategy = GenerationType.SEQUENCE)
+    private Long id;
 
-	@SafeHtml
-	@Length(max = 100, message = "Maximum of 100 Characters allowed for Order Number")
-	@OptionalPattern(regex = FinancialConstants.alphaNumericwithspecialcharForContraWOAndSupplierName, message = "Special Characters are not allowed in Order Number")
-	@Column(updatable = false)
-	private String orderNumber;
+    @SafeHtml
+    @Length(max = 100, message = "Maximum of 100 Characters allowed for Order Number")
+    @OptionalPattern(regex = FinancialConstants.alphaNumericwithspecialcharForContraWOAndSupplierName, message = "Special Characters are not allowed in Order Number")
+    @Column(updatable = false)
+    private String orderNumber;
 
-	@SafeHtml
-	@Length(max = 100, message = "Maximum of 100 Characters allowed for Name")
-	@OptionalPattern(regex = FinancialConstants.alphaNumericwithspecialcharForContraWOAndSupplierName, message = "Special Characters are not allowed in Name")
-	private String name;
+    @SafeHtml
+    @Length(max = 100, message = "Maximum of 100 Characters allowed for Name")
+    @OptionalPattern(regex = FinancialConstants.alphaNumericwithspecialcharForContraWOAndSupplierName, message = "Special Characters are not allowed in Name")
+    private String name;
 
-	private Date orderDate;
+    private Date orderDate;
 
-	@ManyToOne
-	@JoinColumn(name = "supplier")
-	@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-	private Supplier supplier;
+    @ManyToOne
+    @JoinColumn(name = "supplier")
+    private Supplier supplier;
 
-	@Min(1)
-	private BigDecimal orderValue;
+    @Min(1)
+    private BigDecimal orderValue;
 
-	@Min(1)
-	private BigDecimal advancePayable;
+    @Min(1)
+    private BigDecimal advancePayable;
 
-	@SafeHtml
-	private String description;
+    @SafeHtml
+    private String description;
 
-	@ManyToOne
-	@JoinColumn(name = "fund")
-	@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-	private Fund fund;
+    @ManyToOne
+    @JoinColumn(name = "fund")
+    private Fund fund;
 
-	@SafeHtml
-	private String department;
+    @SafeHtml
+    private String department;
 
-	@ManyToOne
-	@JoinColumn(name = "scheme")
-	@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-	private Scheme scheme;
+    @ManyToOne
+    @JoinColumn(name = "scheme")
+    private Scheme scheme;
 
-	@ManyToOne
-	@JoinColumn(name = "subScheme")
-	@Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
-	private SubScheme subScheme;
+    @ManyToOne
+    @JoinColumn(name = "subScheme")
+    private SubScheme subScheme;
 
-	@SafeHtml
-	private String sanctionNumber;
+    @SafeHtml
+    private String sanctionNumber;
 
-	private Date sanctionDate;
+    private Date sanctionDate;
 
-	private Boolean active;
+    private Boolean active;
 
-	@Transient
-	private String departmentName;
+    @Transient
+    private String departmentName;
 
-	@Transient
-	private Boolean editAllFields;
+    @Transient
+    private Boolean editAllFields;
+    
+	
+	
+  // @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+ //   @JoinColumn(name="ordernumber")
+   // @OneToMany(mappedBy="purchaseOrder")
+   @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PurchaseItems> purchaseItems = new ArrayList<>();
+   
+   @OneToMany(mappedBy = "purchaseOrder", cascade = CascadeType.ALL, orphanRemoval = true)
+   private List<EgBillPurchaseItemsDetails> egBillPurchaseItemsDetails;
+	 
+	 
 
-	private String nameOfmodifyingUser;
+    public List<PurchaseItems> getPurchaseItems() {
+		return purchaseItems;
+	}
 
-	@Override
-	public String getBankname() {
-		return null;
+	public void setPurchaseItems(List<PurchaseItems> purchaseItems) {
+		this.purchaseItems = purchaseItems;
 	}
 
 	@Override
-	public String getBankaccount() {
-		return null;
-	}
+    public String getBankname() {
+        return null;
+    }
 
-	@Override
-	public String getPanno() {
-		return null;
-	}
+    @Override
+    public String getBankaccount() {
+        return null;
+    }
 
-	@Override
-	public String getTinno() {
-		return null;
-	}
+    @Override
+    public String getPanno() {
+        return null;
+    }
 
-	@Override
-	public String getIfsccode() {
-		return null;
-	}
+    @Override
+    public String getTinno() {
+        return null;
+    }
 
-	@Override
-	public String getName() {
-		return name;
-	}
+    @Override
+    public String getIfsccode() {
+        return null;
+    }
 
-	@Override
-	public String getModeofpay() {
-		return null;
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	@Override
-	public String getCode() {
-		return orderNumber;
-	}
+    @Override
+    public String getModeofpay() {
+        return null;
+    }
 
-	@Override
-	public Integer getEntityId() {
-		return null;
-	}
+    @Override
+    public String getCode() {
+        return orderNumber;
+    }
 
-	@Override
-	public String getEntityDescription() {
-		return null;
-	}
+    @Override
+    public Integer getEntityId() {
+        return null;
+    }
 
-	@Override
-	public EgwStatus getEgwStatus() {
-		return null;
-	}
+    @Override
+    public String getEntityDescription() {
+        return null;
+    }
 
-	@Override
-	public Long getId() {
-		return id;
-	}
+    @Override
+    public EgwStatus getEgwStatus() {
+        return null;
+    }
 
-	@Override
-	protected void setId(Long id) {
-		this.id = id;
-	}
+    @Override
+    public Long getId() {
+        return id;
+    }
 
-	public String getOrderNumber() {
-		return orderNumber;
-	}
+    @Override
+    protected void setId(Long id) {
+    	this.id = id;
+    }
 
-	public void setOrderNumber(String orderNumber) {
-		this.orderNumber = orderNumber;
-	}
+    public String getOrderNumber() {
+        return orderNumber;
+    }
 
-	public Date getOrderDate() {
-		return orderDate;
-	}
+    public void setOrderNumber(String orderNumber) {
+        this.orderNumber = orderNumber;
+    }
 
-	public void setOrderDate(Date orderDate) {
-		this.orderDate = orderDate;
-	}
+    public Date getOrderDate() {
+        return orderDate;
+    }
 
-	public Supplier getSupplier() {
-		return supplier;
-	}
+    public void setOrderDate(Date orderDate) {
+        this.orderDate = orderDate;
+    }
 
-	public void setSupplier(Supplier supplier) {
-		this.supplier = supplier;
-	}
+    public Supplier getSupplier() {
+        return supplier;
+    }
 
-	public BigDecimal getOrderValue() {
-		return orderValue;
-	}
+    public void setSupplier(Supplier supplier) {
+        this.supplier = supplier;
+    }
 
-	public void setOrderValue(BigDecimal orderValue) {
-		this.orderValue = orderValue;
-	}
+    public BigDecimal getOrderValue() {
+        return orderValue;
+    }
 
-	public BigDecimal getAdvancePayable() {
-		return advancePayable;
-	}
+    public void setOrderValue(BigDecimal orderValue) {
+        this.orderValue = orderValue;
+    }
 
-	public void setAdvancePayable(BigDecimal advancePayable) {
-		this.advancePayable = advancePayable;
-	}
+    public BigDecimal getAdvancePayable() {
+        return advancePayable;
+    }
 
-	public String getDescription() {
-		return description;
-	}
+    public void setAdvancePayable(BigDecimal advancePayable) {
+        this.advancePayable = advancePayable;
+    }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public String getDescription() {
+        return description;
+    }
 
-	public Fund getFund() {
-		return fund;
-	}
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-	public void setFund(Fund fund) {
-		this.fund = fund;
-	}
+    public Fund getFund() {
+        return fund;
+    }
 
-	public String getDepartment() {
-		return department;
-	}
+    public void setFund(Fund fund) {
+        this.fund = fund;
+    }
 
-	public void setDepartment(String department) {
-		this.department = department;
-	}
+    public String getDepartment() {
+        return department;
+    }
 
-	public Scheme getScheme() {
-		return scheme;
-	}
+    public void setDepartment(String department) {
+        this.department = department;
+    }
 
-	public void setScheme(Scheme scheme) {
-		this.scheme = scheme;
-	}
+    public Scheme getScheme() {
+        return scheme;
+    }
 
-	public SubScheme getSubScheme() {
-		return subScheme;
-	}
+    public void setScheme(Scheme scheme) {
+        this.scheme = scheme;
+    }
 
-	public void setSubScheme(SubScheme subScheme) {
-		this.subScheme = subScheme;
-	}
+    public SubScheme getSubScheme() {
+        return subScheme;
+    }
 
-	public String getSanctionNumber() {
-		return sanctionNumber;
-	}
+    public void setSubScheme(SubScheme subScheme) {
+        this.subScheme = subScheme;
+    }
 
-	public void setSanctionNumber(String sanctionNumber) {
-		this.sanctionNumber = sanctionNumber;
-	}
+    public String getSanctionNumber() {
+        return sanctionNumber;
+    }
 
-	public Date getSanctionDate() {
-		return sanctionDate;
-	}
+    public void setSanctionNumber(String sanctionNumber) {
+        this.sanctionNumber = sanctionNumber;
+    }
 
-	public void setSanctionDate(Date sanctionDate) {
-		this.sanctionDate = sanctionDate;
-	}
+    public Date getSanctionDate() {
+        return sanctionDate;
+    }
 
-	public Boolean getActive() {
-		return active;
-	}
+    public void setSanctionDate(Date sanctionDate) {
+        this.sanctionDate = sanctionDate;
+    }
 
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
+    public Boolean getActive() {
+        return active;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
-	public String getDepartmentName() {
-		return departmentName;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
-	public void setDepartmentName(String departmentName) {
-		this.departmentName = departmentName;
-	}
+    public String getDepartmentName() {
+        return departmentName;
+    }
 
-	public Boolean getEditAllFields() {
-		return editAllFields;
-	}
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
 
-	public void setEditAllFields(Boolean editAllFields) {
-		this.editAllFields = editAllFields;
-	}
+    public Boolean getEditAllFields() {
+        return editAllFields;
+    }
 
-	public String getNameOfmodifyingUser() {
-		return nameOfmodifyingUser;
-	}
-
-	public void setNameOfmodifyingUser(String nameOfmodifyingUser) {
-		this.nameOfmodifyingUser = nameOfmodifyingUser;
-	}
+    public void setEditAllFields(Boolean editAllFields) {
+        this.editAllFields = editAllFields;
+    }
+	
 
 }

@@ -52,7 +52,69 @@
 <html>
 <head>
 <title><s:text name="chartOfAccount" /></title>
+<style>
+#inner-output-div {
+	border: 1px solid #ccc;
+	padding: 10px;
+	margin: 5px;
+}
+</style>
+<script>
+window.onload = function() {
+    
+    makeGetRequest();
+};
 
+function makeGetRequest() {
+
+	const glcode = document.getElementById("glCode");
+	
+    var xhr = new XMLHttpRequest();
+
+    // Configure the GET request
+    xhr.open("GET", "/services/EGF/masters/coareport/ajax/chartOfAccounts-audit?glcode="+glcode.value, true);
+
+    // Set up the callback function to handle the response
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            
+            var jsonArray = JSON.parse(xhr.responseText);            
+            generateDivs(jsonArray);
+            console.log(xhr.responseText);
+        }
+    };
+
+    // Send the GET request
+    xhr.send();
+}
+
+function generateDivs(jsonArray) {
+	
+    // Get the reference to the output div
+    const outputDiv = document.getElementById('output-div');
+
+    // Iterate over the JSON array and display elements inside the div
+    for (let i = jsonArray.length - 1; i >= 0 ; i--) {
+        const currentItem = jsonArray[i];
+
+        // Create a div element for each item
+        const itemDiv = document.createElement('div');
+        itemDiv.setAttribute('id', 'inner-output-div');
+
+        // Set the content of the div (you can customize this based on your JSON structure)
+        //itemDiv.textContent = '<strong>'+currentItem.name+'</strong>';
+        itemDiv.innerHTML = currentItem+'<br>';
+
+        // Append the div to the output div
+        outputDiv.appendChild(itemDiv);
+    }
+}
+
+
+
+
+
+</script>
 </head>
 <body>
 	<jsp:include page="../budget/budgetHeader.jsp" />
@@ -71,7 +133,8 @@
 					<td width="10%" class="bluebox"><strong><s:text
 								name="chartOfAccount.accountCode" />:</strong></td>
 					<td width="22%" class="bluebox"><s:property
-							value="model.glcode" /></td>
+							value="model.glcode" /> <input type="hidden" id="glCode"
+						value='<s:property value="model.glcode" />' /></td>
 					<td class="bluebox"><strong><s:text
 								name="chartOfAccount.name" />:</strong></td>
 					<td class="bluebox"><s:property value="model.name" /></td>
@@ -152,8 +215,12 @@
 		</div>
 		<div class="buttonbottom">
 			<input type="button" value="<s:text name='lbl.close'/>"
-				onclick="javascript:window.parent.postMessage('close','*');" class="button" />
+				onclick="javascript:window.parent.postMessage('close','*');"
+				class="button" />
 		</div>
 	</s:form>
+
+	<div id="output-div"></div>
+
 </body>
 </html>
