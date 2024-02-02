@@ -58,6 +58,7 @@
 					 <div class="panel-title"><spring:message code="title.purchaseorder.create" text="Purchase Order Master"/></div>
 				</div>
 			    <%@ include file="purchaseorder-form.jsp"%>
+			    <%@ include file="purchaseorder-items.jsp"%>
 			    <div class="form-group">
 			      <div class="text-center">
 			        <button type='submit' class='btn btn-primary' id="buttonSubmit"> <spring:message code='lbl.create' text="Create"/> </button>

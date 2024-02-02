@@ -63,25 +63,23 @@ import javax.persistence.metamodel.EntityType;
 import javax.persistence.metamodel.Metamodel;
 
 import org.egov.commons.Accountdetailkey;
-import org.egov.commons.BankAudit;
 import org.egov.commons.service.AccountDetailKeyService;
 import org.egov.commons.service.AccountdetailtypeService;
 import org.egov.commons.service.EntityTypeService;
 import org.egov.commons.service.FundService;
+import org.egov.egf.masters.repository.PurchaseItemRepository;
 import org.egov.egf.masters.repository.PurchaseOrderRepository;
-import org.egov.egf.utils.AuditReportUtils;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.validation.exception.ValidationException;
-import org.egov.infstr.services.PersistenceService;
+import org.egov.model.bills.EgBillregister;
+import org.egov.model.masters.PurchaseItems;
 import org.egov.model.masters.PurchaseOrder;
-import org.egov.model.masters.PurchaseOrderAudit;
 import org.egov.model.masters.PurchaseOrderSearchRequest;
 import org.egov.services.masters.SchemeService;
 import org.egov.services.masters.SubSchemeService;
-import org.hibernate.SQLQuery;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,10 +90,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class PurchaseOrderService implements EntityTypeService {
-	
-	@Autowired
-	@Qualifier("persistenceService")
-	private PersistenceService persistenceService;
 
 	@Autowired
 	private PurchaseOrderRepository purchaseOrderRepository;
@@ -120,6 +114,9 @@ public class PurchaseOrderService implements EntityTypeService {
 
 	@Autowired
 	private SubSchemeService subSchemeService;
+	
+	@Autowired
+	private PurchaseItemRepository purchaseItemRepository;
 
 	public Session getCurrentSession() {
 		return entityManager.unwrap(Session.class);
@@ -136,6 +133,8 @@ public class PurchaseOrderService implements EntityTypeService {
 	public PurchaseOrder getByOrderNumber(final String orderNumber) {
 		return purchaseOrderRepository.findByOrderNumber(orderNumber);
 	}
+	
+	
 
 	@SuppressWarnings("deprecation")
 	@Transactional
@@ -158,9 +157,45 @@ public class PurchaseOrderService implements EntityTypeService {
 		if (purchaseOrder.getSupplier() != null && purchaseOrder.getSupplier().getId() != null) {
 			purchaseOrder.setSupplier(supplierService.getById(purchaseOrder.getSupplier().getId()));
 		}
-		purchaseOrder = purchaseOrderRepository.save(purchaseOrder);
+		
+		System.out.println(purchaseOrder.getId());
+		
+		List<PurchaseItems> purchaseItemsList = new ArrayList<>();
+		
+		System.out.println(purchaseOrder.getPurchaseItems().get(0).getQuantity());
+		
+		
+		  for(int i=0; i< purchaseOrder.getPurchaseItems().size(); i++) 
+		  { 
+			  PurchaseItems	  purchaseItems = new PurchaseItems();
+		  purchaseItems.setItemCode(purchaseOrder.getPurchaseItems().get(i).getItemCode());
+		  purchaseItems.setQuantity(purchaseOrder.getPurchaseItems().get(i).getQuantity());
+		  purchaseItems.setUnit(purchaseOrder.getPurchaseItems().get(i).getUnit());
+		  purchaseItems.setUnitRate(purchaseOrder.getPurchaseItems().get(i).getUnitRate());
+		  purchaseItems.setAmount(purchaseOrder.getPurchaseItems().get(i).getAmount());
+		  purchaseItems.setCreatedBy(purchaseOrder.getCreatedBy());
+		  purchaseItems.setLastModifiedBy(purchaseOrder.getLastModifiedBy());
+		  purchaseItems.setPurchaseOrder(purchaseOrder);
+		  purchaseItems.setOrderNumber(purchaseOrder.getOrderNumber());
+		  purchaseItemsList.add(purchaseItems);
+		  
+		  }		 
+			
+		purchaseOrder.setPurchaseItems(purchaseItemsList);
+		
+		purchaseOrder = purchaseOrderRepository.saveAndFlush(purchaseOrder);
+		
 		saveAccountDetailKey(purchaseOrder);
+		
 		return purchaseOrder;
+	}
+	
+	
+	
+	@Transactional
+	public PurchaseItems create(PurchaseItems ac) {
+		return	purchaseOrderRepository.save(ac);
+
 	}
 
 	@Transactional
@@ -206,6 +241,31 @@ public class PurchaseOrderService implements EntityTypeService {
 			savedPurchaseOrder.setSanctionNumber(purchaseOrder.getSanctionNumber());
 			savedPurchaseOrder.setSanctionDate(purchaseOrder.getSanctionDate());
 			setAuditDetails(savedPurchaseOrder);
+			
+			/*--------------------------------------purchase items modification-------------------------------*/                  
+			List<PurchaseItems> purchaseItemsList = new ArrayList<>();
+			for(int i=0; i< purchaseOrder.getPurchaseItems().size(); i++) 
+			  { 
+				  PurchaseItems	  purchaseItems = new PurchaseItems();
+			  purchaseItems.setItemCode(purchaseOrder.getPurchaseItems().get(i).getItemCode());
+			  purchaseItems.setQuantity(purchaseOrder.getPurchaseItems().get(i).getQuantity());
+			  purchaseItems.setUnit(purchaseOrder.getPurchaseItems().get(i).getUnit());
+			  purchaseItems.setUnitRate(purchaseOrder.getPurchaseItems().get(i).getUnitRate());
+			  purchaseItems.setAmount(purchaseOrder.getPurchaseItems().get(i).getAmount());
+			  purchaseItems.setCreatedBy(purchaseOrder.getCreatedBy());
+			  purchaseItems.setLastModifiedBy(purchaseOrder.getLastModifiedBy());
+			  purchaseItems.setPurchaseOrder(purchaseOrder);
+			  purchaseItems.setOrderNumber(purchaseOrder.getOrderNumber());
+			  purchaseItemsList.add(purchaseItems);
+			  
+			  }		 
+				
+			purchaseOrder.setPurchaseItems(purchaseItemsList);
+			
+			purchaseOrder = purchaseOrderRepository.saveAndFlush(purchaseOrder);
+			
+			/*--------------------------------------purchase items modification end-------------------------------*/ 
+			
 			purchaseOrder = purchaseOrderRepository.save(savedPurchaseOrder);
 		}
 		return purchaseOrder;
@@ -290,132 +350,13 @@ public class PurchaseOrderService implements EntityTypeService {
 			throws ValidationException {
 		return Collections.emptyList();
 	}
+
+	public void deletePurchaseItemById(Long id) {
+		
+		purchaseItemRepository.delete(id);
+		// TODO Auto-generated method stub
+		
+	}
+
 	
-	public List<String> getPurchaseOrderAuditReport(final String purchaseOrderId) {
-
-		List<PurchaseOrderAudit> resultList = getPurchaseOrderAuditList(purchaseOrderId);
-
-		List<String> modificationsList = new ArrayList<String>();
-
-		if (resultList.size() == 1)
-			return modificationsList;
-
-		for (int i = 0; i < resultList.size() - 1; i++) {
-
-			PurchaseOrderAudit previousModifiedRow = resultList.get(i);
-			PurchaseOrderAudit currentModifiedRow = resultList.get(i + 1);
-			String modifications = "";
-
-			if (!previousModifiedRow.getName().equals(currentModifiedRow.getName())) {
-				modifications = modifications + "Name : " + previousModifiedRow.getName() + " --> "
-						+ currentModifiedRow.getName() + "<br>";
-			}
-			if (!previousModifiedRow.getOrderNumber().equals(currentModifiedRow.getOrderNumber())) {
-				modifications = modifications + "Order Number : " + previousModifiedRow.getOrderNumber() + " --> "
-						+ currentModifiedRow.getOrderNumber() + "<br>";
-			}			
-			if (!previousModifiedRow.getOrderDate().equals(currentModifiedRow.getOrderDate())) {
-				modifications = modifications + "Order Date : " + previousModifiedRow.getOrderDate()
-						+ " --> " + currentModifiedRow.getOrderDate() + "<br>";
-			}
-			if (!previousModifiedRow.getOrderValue().equals(currentModifiedRow.getOrderValue())) {
-				modifications = modifications + "Order Value : " + previousModifiedRow.getOrderValue()
-						+ " --> " + currentModifiedRow.getOrderValue() + "<br>";
-			}
-			if (!previousModifiedRow.getSupplier().equals(currentModifiedRow.getSupplier())) {
-				modifications = modifications + "Supplier : " + previousModifiedRow.getSupplier()
-						+ " --> " + currentModifiedRow.getSupplier() + "<br>";
-			}
-			if (!previousModifiedRow.getAdvancePayable().equals(currentModifiedRow.getAdvancePayable())) {
-				modifications = modifications + "Advance Payble : " + previousModifiedRow.getAdvancePayable()
-						+ " --> " + currentModifiedRow.getAdvancePayable() + "<br>";
-			}
-			if (!previousModifiedRow.getDescription().equals(currentModifiedRow.getDescription())) {
-				modifications = modifications + "Description : " + previousModifiedRow.getDescription()
-						+ " --> " + currentModifiedRow.getDescription() + "<br>";
-			}
-			if (!previousModifiedRow.getFund().equals(currentModifiedRow.getFund())) {
-				modifications = modifications + "Fund : " + previousModifiedRow.getFund()
-						+ " --> " + currentModifiedRow.getFund() + "<br>";
-			}
-			if (!previousModifiedRow.getDepartment().equals(currentModifiedRow.getDepartment())) {
-				modifications = modifications + "Department : " + previousModifiedRow.getDepartment()
-						+ " --> " + currentModifiedRow.getDepartment() + "<br>";
-			}
-			if (!previousModifiedRow.getScheme().equals(currentModifiedRow.getScheme())) {
-				modifications = modifications + "Scheme : " + previousModifiedRow.getScheme()
-						+ " --> " + currentModifiedRow.getScheme() + "<br>";
-			}
-			if (!previousModifiedRow.getSubScheme().equals(currentModifiedRow.getSubScheme())) {
-				modifications = modifications + "Sub-Scheme : " + previousModifiedRow.getSubScheme()
-						+ " --> " + currentModifiedRow.getSubScheme() + "<br>";
-			}
-			if (!previousModifiedRow.getSanctionNumber().equals(currentModifiedRow.getSanctionNumber())) {
-				modifications = modifications + "Sanction Number : " + previousModifiedRow.getSanctionNumber()
-						+ " --> " + currentModifiedRow.getSanctionNumber() + "<br>";
-			}
-			if (!previousModifiedRow.getSanctionDate().equals(currentModifiedRow.getSanctionDate())) {
-				modifications = modifications + "Sanction Date : " + previousModifiedRow.getSanctionDate()
-						+ " --> " + currentModifiedRow.getSanctionDate() + "<br>";
-			}
-			if (!previousModifiedRow.getActive().equals(currentModifiedRow.getActive())) {
-				modifications = modifications + "Active : " + previousModifiedRow.getActive() + " --> "
-						+ currentModifiedRow.getActive();
-			}			
-
-			if (modifications.length() > 0) {
-								
-				modificationsList.add(
-						"User : " + currentModifiedRow.getNameOfmodifyingUser() + "<br>" + "Modified On : "
-								+ currentModifiedRow.getLastModifiedDate() + "<br><br>" + modifications);
-			}
-
-		}
-
-		return modificationsList;
-	}
-
-	private List<PurchaseOrderAudit> getPurchaseOrderAuditList(final String purchaseOrderId) {
-
-		final StringBuilder queryStr = new StringBuilder();
-		queryStr.append("select po_aud.id, po_aud.name, po_aud.ordernumber, po_aud.orderdate, supp.name supplier_name, po_aud.ordervalue, po_aud.advancepayable, po_aud.description, fnd.name fund_name, po_aud.department, ")
-		.append("schm.name scheme_name, sub_schm.name sub_scheme_name, po_aud.sanctionnumber, po_aud.sanctiondate, po_aud.active, po_aud.lastmodifiedby, po_aud.lastmodifieddate, po_aud.nameofmodifyinguser ")
-		.append("FROM egf_purchaseorder_aud po_aud LEFT JOIN scheme supp ON supp.id=po_aud.supplier ")
-		.append("LEFT JOIN scheme schm ON schm.id=po_aud.scheme LEFT JOIN sub_scheme sub_schm ON sub_schm.id=po_aud.subscheme LEFT JOIN fund fnd ON fnd.id=po_aud.fund ")
-		.append("WHERE po_aud.id=:purchaseOrderId ORDER BY po_aud.lastmodifieddate NULLS FIRST");
-		SQLQuery queryResult = persistenceService.getSession().createSQLQuery(queryStr.toString());
-		queryResult.setLong("purchaseOrderId", Long.valueOf(purchaseOrderId));
-		final List<Object[]> purchaseOrderListFromQuery = queryResult.list();
-
-		List<PurchaseOrderAudit> purchaseOrderAuditList = new ArrayList<PurchaseOrderAudit>();
-
-		for (Object[] obj : purchaseOrderListFromQuery) {
-			PurchaseOrderAudit element = new PurchaseOrderAudit();
-			element.setId(String.valueOf(obj[0] != null ? obj[0] : AuditReportUtils.NO_VALUE));
-			element.setName(String.valueOf(obj[1] != null ? obj[1] : AuditReportUtils.NO_VALUE));
-			element.setOrderNumber(String.valueOf(obj[2] != null ? obj[2] : AuditReportUtils.NO_VALUE));
-			element.setOrderDate(String.valueOf(obj[3] != null ? obj[3] : AuditReportUtils.NO_VALUE));
-			element.setSupplier(String.valueOf(obj[4] != null ? obj[4] : AuditReportUtils.NO_VALUE));
-			element.setOrderValue(String.valueOf(obj[5] != null ? obj[5] : AuditReportUtils.NO_VALUE));
-			element.setAdvancePayable(String.valueOf(obj[6] != null ? obj[6] : AuditReportUtils.NO_VALUE));
-			element.setDescription(String.valueOf(obj[7] != null ? obj[7] : AuditReportUtils.NO_VALUE));
-			element.setFund(String.valueOf(obj[8] != null ? obj[8] : AuditReportUtils.NO_VALUE));
-			element.setDepartment(String.valueOf(obj[9] != null ? obj[9] : AuditReportUtils.NO_VALUE));
-			element.setScheme(String.valueOf(obj[10] != null ? obj[10] : AuditReportUtils.NO_VALUE));
-			element.setSubScheme(String.valueOf(obj[11] != null ? obj[11] : AuditReportUtils.NO_VALUE));
-			element.setSanctionNumber(String.valueOf(obj[12] != null ? obj[12] : AuditReportUtils.NO_VALUE));
-			element.setSanctionDate(String.valueOf(obj[13] != null ? obj[13] : AuditReportUtils.NO_VALUE));
-			String isActive = (obj[14] != null && (Boolean)obj[14].equals(true)) ? "Active" : "Inactive"; 
-			element.setActive(String.valueOf(isActive));
-			element.setLastModifiedBy(String.valueOf(obj[15] != null ? obj[15] : AuditReportUtils.NO_VALUE));
-			String lastModifiedDate = String.valueOf(obj[16] != null ? obj[16] : "");			
-			element.setLastModifiedDate(AuditReportUtils.getFormattedDateTime(lastModifiedDate));			
-			element.setNameOfmodifyingUser(String.valueOf(obj[17] != null ? obj[17] : AuditReportUtils.NO_VALUE));
-			purchaseOrderAuditList.add(element);
-			element = null;
-		}
-
-		return purchaseOrderAuditList;
-	}
-
 }

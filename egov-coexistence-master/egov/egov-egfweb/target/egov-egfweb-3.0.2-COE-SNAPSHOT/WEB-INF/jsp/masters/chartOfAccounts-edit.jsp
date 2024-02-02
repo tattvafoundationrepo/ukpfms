@@ -55,6 +55,7 @@
 <script type="text/javascript"
 	src="/services/EGF/resources/javascript/chartofaccountsHelper.js"></script>
 <script type="text/javascript">
+
 	function validateAndSubmit() {
 
 		jQuery("#accountDetailTypeAss option[value!='']").each(function() {
