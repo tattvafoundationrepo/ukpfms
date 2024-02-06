@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Built-By: tattva
+Build-Jdk: 17.0.9
+Implementation-Title: e-governments database
+Implementation-Vendor-Id: org.egov
+Implementation-Vendor: eGovernments Foundation
+Created-By: Maven Integration for Eclipse
+Implementation-Version: 2024-02-04 10:08
+Specification-Title: e-governments database
+Specification-Version: 3.0.2-COE-SNAPSHOT
+
