@@ -1,9 +1,0 @@
-org.egov.eis.web.actions
-org.egov.eis.web.adaptor
-org.egov.eis.web.controller.es.dashboard
-org.egov.eis.web.controller.grievance
-org.egov.eis.web.controller.masters.designation
-org.egov.eis.web.controller.masters.employee
-org.egov.eis.web.controller.masters.position
-org.egov.eis.web.controller.reports
-org.egov.eis.web.controller.rest
