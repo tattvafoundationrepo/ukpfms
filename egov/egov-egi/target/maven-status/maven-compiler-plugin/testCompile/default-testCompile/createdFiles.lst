@@ -1,9 +1,0 @@
-org/egov/builder/entities/BoundaryBuilder.class
-org/egov/builder/entities/DepartmentBuilder.class
-org/egov/builder/entities/BoundaryTypeBuilder.class
-org/egov/infra/admin/master/service/DepartmentServiceTest.class
-org/egov/infra/filestore/service/impl/LocalDiskFileStoreServiceTest.class
-org/egov/builder/entities/HeirarchyTypeBuilder.class
-org/egov/builder/entities/ModuleBuilder.class
-org/egov/infra/admin/master/service/HierarchyTypeServiceTest.class
-org/egov/infra/filestore/service/impl/LocalDiskFileStoreServiceTest$1.class

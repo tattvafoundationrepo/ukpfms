@@ -1,8 +1,0 @@
-org.egov.collection.web.actions.citizen
-org.egov.collection.web.actions.citizen.reports
-org.egov.collection.web.actions.receipts
-org.egov.collection.web.actions.reports
-org.egov.collection.web.actions.service
-org.egov.collection.web.controller
-org.egov.collection.web.controller.dashboard
-org.egov.collection.web.controller.report
