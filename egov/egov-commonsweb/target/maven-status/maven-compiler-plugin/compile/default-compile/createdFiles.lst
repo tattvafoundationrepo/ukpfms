@@ -1,0 +1,8 @@
+org/egov/commons/web/adaptor/UOMCategoryJsonAdaptor.class
+org/egov/commons/web/controller/EducationalQualificationController.class
+org/egov/commons/web/controller/UOMController.class
+org/egov/commons/web/adaptor/NationalityJsonAdaptor.class
+org/egov/commons/web/controller/NationalityController.class
+org/egov/commons/web/controller/UOMCategoryController.class
+org/egov/commons/web/adaptor/UOMJsonAdaptor.class
+org/egov/commons/web/adaptor/EducationalQualificationJsonAdaptor.class
