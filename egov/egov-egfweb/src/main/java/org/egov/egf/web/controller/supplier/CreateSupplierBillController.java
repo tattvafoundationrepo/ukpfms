@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.ServletContext;
@@ -238,6 +239,21 @@ public class CreateSupplierBillController extends BaseBillController {
 	}
 	
 	
+	/*
+	 * //Ajax call for the BudgetDetails
+	 * 
+	 * @GetMapping(value="/get/budgetDetails")
+	 * 
+	 * @ResponseBody public List<BudgetDetails>
+	 * getBudgetDetails(@RequestParam("accountCode") @SafeHtml final String
+	 * accountCode, final Model model){
+	 * System.out.println("accountCode : "+accountCode); List<budgetDetails>
+	 * budgetDetails = budgetDetailsRepository.findbyAccountCode(accountCode);
+	 * model.addAttribute("budgetDetails", budgetDetails);
+	 * //model.addAttribute("orderValue", budgetDetails); return budgetDetails; }
+	 * 
+	 */
+	
 
 	// TODO      Ajax call for get purchaseItems
 	@GetMapping(value = "/get/purchaseItems")
@@ -274,6 +290,14 @@ public class CreateSupplierBillController extends BaseBillController {
 		
 		
 		//System.out.println(egBillregister.getPurchaseItems().size());
+		
+		List<Map<String, Object>> budgetDetails = null;
+        model.addAttribute("mode", "view");
+        if (egBillregister.getEgBillregistermis().getBudgetaryAppnumber() != null &&
+                !egBillregister.getEgBillregistermis().getBudgetaryAppnumber().isEmpty()) {
+            budgetDetails = supplierBillService.getBudgetDetailsForBill(egBillregister);
+        }
+        model.addAttribute("budgetDetails", budgetDetails);
 			
 		
 		if (FinancialConstants.BUTTONFORWARD.equalsIgnoreCase(workFlowAction) && !commonsUtil

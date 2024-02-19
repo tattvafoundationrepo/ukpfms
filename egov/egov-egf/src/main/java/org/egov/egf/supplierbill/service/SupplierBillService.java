@@ -289,6 +289,8 @@ public class SupplierBillService {
      			
      			egBillPurchaseItemsDetails.setItemCode(purchaseItems.getItemCode());     		
      		    egBillPurchaseItemsDetails.setUnitRate(purchaseItems.getUnitRate());
+     		    egBillPurchaseItemsDetails.setGstRate(purchaseItems.getGstRate());
+     		    egBillPurchaseItemsDetails.setUnitValueWithGst(purchaseItems.getUnitValueWithGst());
      		    egBillPurchaseItemsDetails.setQuantity(purchaseItems.getQuantity());
      		    egBillPurchaseItemsDetails.setAmount(purchaseItems.getAmount());
      		    egBillPurchaseItemsDetails.setCreatedby(egBillregister.getCreatedBy());
